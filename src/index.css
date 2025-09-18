@@ -2,26 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Football Training App Design System - Vibrant & Kid-Friendly */
+/* Football Training App Design System - Teen-Focused & Modern */
 
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    /* Core football-themed colors */
-    --football-green: 120 60% 35%;
-    --football-green-light: 120 45% 55%;
-    --football-green-dark: 120 70% 25%;
+    /* Core football-themed colors - more sophisticated palette */
+    --football-green: 140 35% 45%;
+    --football-green-light: 140 30% 60%;
+    --football-green-dark: 140 40% 30%;
     
-    --energy-orange: 25 95% 55%;
-    --energy-orange-light: 25 85% 70%;
-    --energy-orange-dark: 20 90% 45%;
+    --energy-orange: 15 85% 50%;
+    --energy-orange-light: 15 75% 65%;
+    --energy-orange-dark: 15 90% 40%;
     
-    --sky-blue: 210 85% 60%;
-    --sky-blue-light: 210 75% 75%;
+    --electric-blue: 220 90% 55%;
+    --electric-blue-light: 220 80% 70%;
     
-    --sunshine-yellow: 45 95% 60%;
-    --grass-green: 110 50% 45%;
+    --neon-cyan: 180 85% 55%;
+    --pitch-green: 130 40% 40%;
     
     /* Semantic color mapping */
     --background: 110 25% 97%;
@@ -41,14 +41,14 @@
     --secondary: var(--energy-orange);
     --secondary-foreground: 0 0% 100%;
 
-    --accent: var(--sky-blue);
+    --accent: var(--electric-blue);
     --accent-foreground: 0 0% 100%;
 
-    --success: var(--grass-green);
+    --success: var(--pitch-green);
     --success-foreground: 0 0% 100%;
 
-    --warning: var(--sunshine-yellow);
-    --warning-foreground: 120 15% 15%;
+    --warning: var(--neon-cyan);
+    --warning-foreground: 0 0% 15%;
 
     --muted: 110 15% 93%;
     --muted-foreground: 120 10% 50%;
@@ -62,11 +62,12 @@
 
     --radius: 1rem;
 
-    /* Custom gradients */
+    /* Custom gradients - more dynamic and modern */
     --gradient-primary: linear-gradient(135deg, hsl(var(--football-green)), hsl(var(--football-green-light)));
     --gradient-secondary: linear-gradient(135deg, hsl(var(--energy-orange)), hsl(var(--energy-orange-light)));
-    --gradient-success: linear-gradient(135deg, hsl(var(--grass-green)), hsl(var(--football-green-light)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--football-green)), hsl(var(--sky-blue)));
+    --gradient-success: linear-gradient(135deg, hsl(var(--pitch-green)), hsl(var(--football-green-light)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--football-green)), hsl(var(--electric-blue)));
+    --gradient-accent: linear-gradient(45deg, hsl(var(--electric-blue)), hsl(var(--neon-cyan)));
     
     /* Shadows */
     --shadow-soft: 0 4px 20px -2px hsl(var(--card-shadow) / 0.3);
@@ -85,11 +86,11 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 600;
   }
 }
