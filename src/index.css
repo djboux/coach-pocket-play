@@ -48,7 +48,7 @@
     --success-foreground: 0 0% 100%;
 
     --warning: var(--neon-cyan);
-    --warning-foreground: 0 0% 15%;
+    --warning-foreground: 0 0% 100%;
 
     --muted: 110 15% 93%;
     --muted-foreground: 120 10% 50%;

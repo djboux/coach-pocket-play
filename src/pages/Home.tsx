@@ -24,7 +24,7 @@ import heroImage from "@/assets/hero-football-training.jpg";
 const Home = () => {
   const [childId, setChildId] = useState("demo");
   const [equipment, setEquipment] = useState<"ball_only" | "cones">("ball_only");
-  const [streak, setStreak] = useState(0);
+  
   const [parentSummary, setParentSummary] = useState<{
     child_id: string;
     feedback_counts: { easy: number; right: number; hard: number };
@@ -38,9 +38,6 @@ const Home = () => {
   // Load user data on component mount
   useEffect(() => {
     if (childId) {
-      const currentStreak = mockApi.getStreak(childId);
-      setStreak(currentStreak);
-      
       mockApi.getParentSummary(childId).then(summary => {
         setParentSummary(summary);
       });
@@ -109,23 +106,15 @@ const Home = () => {
           </p>
         </div>
 
-        {/* Quick Stats Cards */}
-        <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-          <Card className="border-0 bg-white/10 backdrop-blur-sm text-white">
-            <CardContent className="p-4 text-center">
-              <Trophy className="h-6 w-6 mx-auto mb-2 text-yellow-300" />
-              <div className="text-xl font-bold">{streak}</div>
-              <div className="text-xs opacity-90">Day Streak</div>
-            </CardContent>
-          </Card>
-          
+        {/* Quick Stats Card */}
+        <div className="max-w-md mx-auto">
           <Card className="border-0 bg-white/10 backdrop-blur-sm text-white">
             <CardContent className="p-4 text-center">
               <TrendingUp className="h-6 w-6 mx-auto mb-2 text-green-300" />
               <div className="text-xl font-bold">
                 {parentSummary ? Object.values(parentSummary.levels_progressed).reduce((a, b) => a + b, 0) : 0}
               </div>
-              <div className="text-xs opacity-90">Levels Up</div>
+              <div className="text-xs opacity-90">Levels Completed</div>
             </CardContent>
           </Card>
         </div>
