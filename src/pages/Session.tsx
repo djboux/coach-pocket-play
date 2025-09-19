@@ -112,7 +112,7 @@ const Session = () => {
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Setup
+            Back to Home
           </Button>
           <div className="text-right">
             <div className="text-xs text-muted-foreground">Debug Mode</div>
@@ -180,13 +180,27 @@ const Session = () => {
                       </span>
                       {drill.title}
                     </CardTitle>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-3">
                       <Badge className={getSkillColor(drill.skill)}>
                         {drill.skill.replace("_", " ")}
                       </Badge>
-                      <Badge variant="outline">
-                        {drill.family} - Level {drill.level}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <div
+                              key={i}
+                              className={`w-2 h-2 rounded-full ${
+                                i < drill.level 
+                                  ? 'bg-primary' 
+                                  : 'bg-muted-foreground/30'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground font-medium">
+                          Level {drill.level}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
