@@ -106,36 +106,6 @@ const Home = () => {
           </p>
         </div>
 
-        {/* Quick Stats Card */}
-        <div className="max-w-md mx-auto">
-          <Card className="border-0 bg-white/10 backdrop-blur-sm text-white">
-            <CardContent className="p-4 text-center">
-              <TrendingUp className="h-6 w-6 mx-auto mb-2 text-green-300" />
-              <div className="text-xl font-bold">
-                {parentSummary ? Object.values(parentSummary.levels_progressed).reduce((a, b) => a + b, 0) : 0}
-              </div>
-              <div className="text-xs opacity-90">Levels Completed</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Progress Card */}
-        {parentSummary && (
-          <Card className="max-w-md mx-auto border-0 bg-white/10 backdrop-blur-sm text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">Training Progress</h3>
-                <Star className="h-5 w-5 text-yellow-300" />
-              </div>
-              <Progress value={getProgressPercentage()} className="mb-3" />
-              <div className="flex justify-between text-xs opacity-90">
-                <span>🟢 Easy: {parentSummary.feedback_counts.easy}</span>
-                <span>🟡 Right: {parentSummary.feedback_counts.right}</span>
-                <span>🔴 Hard: {parentSummary.feedback_counts.hard}</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Main Action Card */}
         <Card className="max-w-md mx-auto shadow-2xl border-0">

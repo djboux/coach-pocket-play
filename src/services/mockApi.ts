@@ -4,6 +4,7 @@
 export interface Drill {
   id: number;
   title: string;
+  family: string; // Drill family name (e.g., "Toe Taps", "Inside-Outside Touches")
   skill: string;
   level: number;
   requirements: "ball_only" | "cones";
@@ -35,11 +36,11 @@ export interface ParentSummary {
   levels_progressed: Record<string, number>;
 }
 
-// Seed data matching the requirements
 const DRILL_LIBRARY: Drill[] = [
   {
     id: 1,
     title: "Toe Taps",
+    family: "Toe Taps",
     skill: "ball_control",
     level: 1,
     requirements: "ball_only",
@@ -50,6 +51,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 2,
     title: "Toe Taps",
+    family: "Toe Taps",
     skill: "ball_control",
     level: 2,
     requirements: "ball_only",
@@ -60,6 +62,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 3,
     title: "Toe Taps",
+    family: "Toe Taps",
     skill: "ball_control",
     level: 3,
     requirements: "ball_only",
@@ -70,6 +73,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 4,
     title: "Inside–Outside Touches",
+    family: "Inside-Outside Touches",
     skill: "ball_control",
     level: 1,
     requirements: "ball_only",
@@ -80,6 +84,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 5,
     title: "Inside–Outside Touches",
+    family: "Inside-Outside Touches",
     skill: "ball_control",
     level: 2,
     requirements: "ball_only",
@@ -90,6 +95,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 6,
     title: "Inside–Outside Touches",
+    family: "Inside-Outside Touches",
     skill: "ball_control",
     level: 3,
     requirements: "ball_only",
@@ -100,6 +106,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 7,
     title: "Figure-8 Dribble",
+    family: "Figure-8 Dribble",
     skill: "dribbling",
     level: 1,
     requirements: "ball_only",
@@ -110,6 +117,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 8,
     title: "Figure-8 Dribble",
+    family: "Figure-8 Dribble",
     skill: "dribbling",
     level: 2,
     requirements: "ball_only",
@@ -120,6 +128,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 9,
     title: "Figure-8 Dribble",
+    family: "Figure-8 Dribble",
     skill: "dribbling",
     level: 3,
     requirements: "ball_only",
@@ -130,6 +139,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 10,
     title: "Wall Passes",
+    family: "Wall Passes",
     skill: "passing",
     level: 1,
     requirements: "ball_only",
@@ -140,6 +150,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 11,
     title: "Wall Passes",
+    family: "Wall Passes",
     skill: "passing",
     level: 2,
     requirements: "ball_only",
@@ -150,6 +161,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 12,
     title: "Wall Passes",
+    family: "Wall Passes",
     skill: "passing",
     level: 3,
     requirements: "ball_only",
@@ -160,6 +172,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 13,
     title: "Cone Slalom",
+    family: "Cone Slalom",
     skill: "dribbling",
     level: 1,
     requirements: "cones",
@@ -170,6 +183,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 14,
     title: "Cone Slalom",
+    family: "Cone Slalom",
     skill: "dribbling",
     level: 2,
     requirements: "cones",
@@ -180,6 +194,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 15,
     title: "Cone Slalom",
+    family: "Cone Slalom",
     skill: "dribbling",
     level: 3,
     requirements: "cones",
@@ -191,6 +206,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 16,
     title: "Juggling Practice",
+    family: "Juggling Practice",
     skill: "ball_control",
     level: 1,
     requirements: "ball_only",
@@ -201,6 +217,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 17,
     title: "Juggling Practice",
+    family: "Juggling Practice",
     skill: "ball_control",
     level: 2,
     requirements: "ball_only",
@@ -211,6 +228,7 @@ const DRILL_LIBRARY: Drill[] = [
   {
     id: 18,
     title: "Step Over Practice",
+    family: "Step Over Practice",
     skill: "dribbling",
     level: 1,
     requirements: "ball_only",

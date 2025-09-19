@@ -185,7 +185,7 @@ const Session = () => {
                         {drill.skill.replace("_", " ")}
                       </Badge>
                       <Badge variant="outline">
-                        Level {drill.level}
+                        {drill.family} - Level {drill.level}
                       </Badge>
                     </div>
                   </div>
@@ -194,11 +194,11 @@ const Session = () => {
               
               <CardContent className="space-y-4">
                 {/* Why it matters */}
-                <div className="bg-accent/20 p-4 rounded-xl">
-                  <h4 className="font-semibold text-sm mb-2 text-accent-foreground">
+                <div className="bg-primary/15 border border-primary/20 p-4 rounded-xl">
+                  <h4 className="font-semibold text-sm mb-2 text-primary">
                     💡 Why this drill matters
                   </h4>
-                  <p className="text-sm text-accent-foreground/80">
+                  <p className="text-sm text-foreground">
                     {drill.why_it_matters}
                   </p>
                 </div>
