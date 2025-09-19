@@ -265,6 +265,18 @@ const Session = () => {
           ))}
         </div>
 
+        {/* Next Day Button - Always visible */}
+        <div className="flex justify-center">
+          <Button
+            variant={completedDrills === session?.drills.length && session?.drills.length > 0 ? "default" : "secondary"}
+            disabled={completedDrills !== session?.drills.length || !session?.drills.length}
+            onClick={() => loadSession(true)}
+            className="w-full max-w-xs"
+          >
+            Next Day
+          </Button>
+        </div>
+
         {/* Completion Message */}
         {completedDrills === session?.drills.length && session?.drills.length > 0 && (
           <Card className="bg-gradient-success text-success-foreground text-center">
