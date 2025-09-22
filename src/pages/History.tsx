@@ -11,6 +11,8 @@ interface SessionHistory {
   drills: Array<{
     title: string;
     rating: "easy" | "right" | "hard";
+    level?: number;
+    instructions?: string;
   }>;
 }
 
@@ -24,6 +26,13 @@ const History = () => {
   useEffect(() => {
     loadHistory();
   }, [childId]);
+
+  // Add effect to reload history when navigated to
+  useEffect(() => {
+    const handleFocus = () => loadHistory();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   const loadHistory = async () => {
     try {
@@ -109,7 +118,6 @@ const History = () => {
               <p className="text-muted-foreground">{childId}'s progress</p>
             </div>
           </div>
-          <Calendar className="h-6 w-6 text-muted-foreground" />
         </div>
 
         {/* History Cards */}
@@ -148,14 +156,24 @@ const History = () => {
                       <div key={drillIndex} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                         <div className="flex items-center gap-3">
                           {getRatingIcon(drill.rating)}
-                          <span className="font-medium">{drill.title}</span>
+                          <div>
+                            <span className="font-medium block">{drill.title}</span>
+                            <span className="text-xs text-muted-foreground">
+                              Level {drill.level || 1} • {drill.instructions?.substring(0, 50) || 'No description'}...
+                            </span>
+                          </div>
                         </div>
-                        <Badge 
-                          variant="secondary"
-                          className={getRatingBadge(drill.rating)}
-                        >
-                          {drill.rating === "right" ? "Just right" : drill.rating}
-                        </Badge>
+                        <div className="flex flex-col items-end gap-1">
+                          <Badge 
+                            variant="secondary"
+                            className={getRatingBadge(drill.rating)}
+                          >
+                            {drill.rating === "right" ? "Just right" : drill.rating}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            Lvl {drill.level || 1}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>

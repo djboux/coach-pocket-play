@@ -439,7 +439,9 @@ export const mockApi = {
           const drill = DRILL_LIBRARY.find(d => d.id === f.drill_id);
           return {
             title: drill?.title || "Unknown",
-            rating: f.rating
+            rating: f.rating,
+            level: drill?.level || 1,
+            instructions: drill?.instructions || ""
           };
         });
         
@@ -452,24 +454,24 @@ export const mockApi = {
       {
         date: new Date().toISOString(),
         drills: [
-          { title: "Toe Taps", rating: "right" as const },
-          { title: "Figure-8 Dribble", rating: "easy" as const },
-          { title: "Wall Passes", rating: "right" as const }
+          { title: "Toe Taps", rating: "right" as const, level: 2, instructions: "Alternate taps with both feet. Goal: 30 in 30s." },
+          { title: "Figure-8 Dribble", rating: "easy" as const, level: 1, instructions: "Dribble in a figure-8 around two objects (use shoes). 3 laps." },
+          { title: "Wall Passes", rating: "right" as const, level: 3, instructions: "40 alternating-foot passes." }
         ]
       },
       {
         date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         drills: [
-          { title: "Cone Slalom", rating: "hard" as const },
-          { title: "Juggling Practice", rating: "right" as const },
-          { title: "Inside–Outside Touches", rating: "right" as const }
+          { title: "Cone Slalom", rating: "hard" as const, level: 2, instructions: "Slalom down and back twice in 30s." },
+          { title: "Juggling Practice", rating: "right" as const, level: 1, instructions: "Keep the ball up using feet only. Goal: 5 touches." },
+          { title: "Inside–Outside Touches", rating: "right" as const, level: 2, instructions: "30 cycles at faster pace." }
         ]
       },
       {
         date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         drills: [
-          { title: "Step Over Practice", rating: "easy" as const },
-          { title: "Wall Passes", rating: "right" as const }
+          { title: "Step Over Practice", rating: "easy" as const, level: 1, instructions: "Step over the ball with each foot. 10 each side." },
+          { title: "Wall Passes", rating: "right" as const, level: 1, instructions: "20 passes with right foot against a wall." }
         ]
       }
     ];

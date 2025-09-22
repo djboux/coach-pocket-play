@@ -27,6 +27,8 @@ const Session = () => {
   const loadSession = async (ignoreRecent = false) => {
     try {
       setLoading(true);
+      // Reset feedback state when loading new session
+      setFeedbackGiven(new Set());
       const sessionData = await mockApi.getTodaySession(childId, equipment, ignoreRecent);
       setSession(sessionData);
     } catch (error) {
