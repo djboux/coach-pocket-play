@@ -21,7 +21,7 @@ const History = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const childId = localStorage.getItem("currentChild") || "demo";
+  const childId = localStorage.getItem("childId") || "demo";
 
   useEffect(() => {
     loadHistory();

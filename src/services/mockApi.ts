@@ -432,6 +432,64 @@ export const mockApi = {
 
   // Helper to get session history for display (mock implementation)
   getSessionHistory(childId: string) {
-    return [];
+    const history = getChildHistory(childId);
+    
+    if (history.length > 0) {
+      // Group feedback by date
+      const sessionDates = [...new Set(history.map(f => f.timestamp.toDateString()))];
+      
+      return sessionDates.slice(0, 7).map(date => {
+        const dayFeedback = history.filter(f => f.timestamp.toDateString() === date);
+        const drills = dayFeedback.map(f => {
+          const drill = DRILL_LIBRARY.find(d => d.id === f.drill_id);
+          // Convert new schema back to old format for display compatibility
+          let rating: "easy" | "right" | "hard" = "right";
+          if (f.difficulty_rating === "could_not_do") rating = "hard";
+          else if (f.difficulty_rating === "challenging") rating = "right";  
+          else if (f.difficulty_rating === "easy") rating = "easy";
+          
+          return {
+            title: drill?.title || "Unknown Drill",
+            rating,
+            level: drill?.level || 1,
+            instructions: drill?.instructions || ""
+          };
+        });
+        
+        return { 
+          date: new Date(date).toISOString(), 
+          drills 
+        };
+      });
+    }
+    
+    // Return mock training history data for demo
+    const mockHistory = [
+      {
+        date: new Date().toISOString(),
+        drills: [
+          { title: "Toe Taps", rating: "right" as const, level: 2, instructions: "Alternate taps with both feet. Goal: 30 in 30s." },
+          { title: "Figure-8 Dribble", rating: "easy" as const, level: 1, instructions: "Dribble in a figure-8 around two objects (use shoes). 3 laps." },
+          { title: "Wall Passes", rating: "right" as const, level: 3, instructions: "40 alternating-foot passes." }
+        ]
+      },
+      {
+        date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        drills: [
+          { title: "Cone Slalom", rating: "hard" as const, level: 2, instructions: "Slalom down and back twice in 30s." },
+          { title: "Juggling Practice", rating: "right" as const, level: 1, instructions: "Keep the ball up using feet only. Goal: 5 touches." },
+          { title: "Inside–Outside Touches", rating: "right" as const, level: 2, instructions: "30 cycles at faster pace." }
+        ]
+      },
+      {
+        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        drills: [
+          { title: "Step Over Practice", rating: "easy" as const, level: 1, instructions: "Step over the ball with each foot. 10 each side." },
+          { title: "Wall Passes", rating: "right" as const, level: 1, instructions: "20 passes with right foot against a wall." }
+        ]
+      }
+    ];
+    
+    return mockHistory;
   }
 };
