@@ -1,39 +1,62 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { SessionGuard } from "@/components/SessionGuard";
+import { DrillCard } from "@/components/DrillCard";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { mockApi, type Drill, type SessionResponse } from "@/services/mockApi";
-import { ArrowLeft, ExternalLink, Flame, TrendingUp, TrendingDown, Target, Clock } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { api, SessionToday, FeedbackIn } from "@/services/api";
+import { mockApi } from "@/services/mockApi";
+import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Session = () => {
-  const [session, setSession] = useState<SessionResponse | null>(null);
+  const [session, setSession] = useState<SessionToday | null>(null);
   const [loading, setLoading] = useState(true);
-  const [feedbackGiven, setFeedbackGiven] = useState<Set<number>>(new Set());
-  const [drillFeedback, setDrillFeedback] = useState<Record<number, "easy" | "right" | "hard">>({});
-  const [streak, setStreak] = useState(0);
+  const [completedDrills, setCompletedDrills] = useState<Set<number>>(new Set());
+  const [swapUsed, setSwapUsed] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const childId = localStorage.getItem("currentChild") || "demo";
-  const equipment = (localStorage.getItem("currentEquipment") as "ball_only" | "ball_cones") || "ball_only";
+  const childId = localStorage.getItem("childId") || "";
+  const equipment = (localStorage.getItem("equipment") as "ball_only" | "ball_cones") || "ball_only";
+  const useMockApi = localStorage.getItem("useMockApi") !== "false";
 
   useEffect(() => {
-    loadSession();
-    setStreak(mockApi.getStreak(childId));
-  }, [childId, equipment]);
+    if (childId) {
+      loadSession();
+    } else {
+      navigate('/');
+    }
+  }, [childId, equipment, navigate]);
 
-  const loadSession = async (ignoreRecent = false) => {
+  const loadSession = async () => {
     try {
       setLoading(true);
-      // Reset feedback state when loading new session
-      setFeedbackGiven(new Set());
-      setDrillFeedback({});
-      const sessionData = await mockApi.getTodaySession(childId, equipment, ignoreRecent);
-      setSession(sessionData);
+      setCompletedDrills(new Set());
+      setSwapUsed(false);
+      
+      if (useMockApi) {
+        const mockSession = await mockApi.getTodaySession(childId, equipment);
+        setSession({
+          child_id: childId,
+          drills: mockSession.drills.slice(0, 3).map(drill => ({
+            id: drill.id,
+            family_id: drill.family,
+            title: drill.title,
+            level: drill.level,
+            skill: drill.skill,
+            requirements: drill.requirements,
+            instructions: drill.instructions,
+            youtube_url: drill.youtube_url,
+            why_it_matters: drill.why_it_matters
+          }))
+        });
+      } else {
+        const sessionData = await api.getSessionToday(childId, equipment);
+        setSession(sessionData);
+      }
     } catch (error) {
+      console.error('Error loading session:', error);
       toast({
         title: "Error loading session",
         description: "Please try again",
@@ -44,45 +67,32 @@ const Session = () => {
     }
   };
 
-  const handleFeedback = async (drillId: number, rating: "easy" | "right" | "hard") => {
+  const handleDrillComplete = async (feedback: FeedbackIn) => {
     try {
-      // If clicking the same rating that's already selected, unselect it
-      if (drillFeedback[drillId] === rating) {
-        // Remove from feedback and drill feedback
-        setFeedbackGiven(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(drillId);
-          return newSet;
+      if (useMockApi) {
+        await mockApi.submitFeedback({
+          child_id: childId,
+          drill_id: feedback.drill_id,
+          rating: feedback.attempted ? (
+            feedback.felt === 'couldnt' ? 'hard' : 
+            feedback.felt === 'tough' ? 'right' : 'easy'
+          ) : 'right'
         });
-        setDrillFeedback(prev => {
-          const newFeedback = { ...prev };
-          delete newFeedback[drillId];
-          return newFeedback;
-        });
-        return;
+      } else {
+        await api.submitFeedback(feedback);
       }
 
-      await mockApi.submitFeedback({
-        child_id: childId,
-        drill_id: drillId,
-        rating
-      });
+      setCompletedDrills(prev => new Set([...prev, feedback.drill_id]));
 
-      setFeedbackGiven(prev => new Set([...prev, drillId]));
-      setDrillFeedback(prev => ({ ...prev, [drillId]: rating }));
-      setStreak(mockApi.getStreak(childId));
-
-      const messages = {
-        easy: "Great job! 🎉 We'll make it harder next time!",
-        right: "Perfect! 💪 Keep up the good work!",
-        hard: "No worries! 🤗 We'll adjust the difficulty!"
-      };
-
-      toast({
-        title: "Feedback recorded!",
-        description: messages[rating],
-      });
+      // Check if session is complete
+      if (completedDrills.size + 1 >= 3) {
+        toast({
+          title: "Session Complete! 🎉",
+          description: "Amazing work! You can now try bonus drills or start fresh tomorrow.",
+        });
+      }
     } catch (error) {
+      console.error('Error submitting feedback:', error);
       toast({
         title: "Error saving feedback",
         description: "Please try again",
@@ -91,278 +101,152 @@ const Session = () => {
     }
   };
 
-  const getSkillColor = (skill: string) => {
-    const colors = {
-      ball_control: "bg-accent text-accent-foreground",
-      dribbling: "bg-secondary text-secondary-foreground",
-      passing: "bg-success text-success-foreground",
-    };
-    return colors[skill as keyof typeof colors] || "bg-muted text-muted-foreground";
-  };
-
-  const getFeedbackIcon = (rating: string) => {
-    switch (rating) {
-      case "easy": return <TrendingUp className="h-4 w-4" />;
-      case "hard": return <TrendingDown className="h-4 w-4" />;
-      default: return <Target className="h-4 w-4" />;
+  const handleSwapDrill = async (drillId: number) => {
+    if (swapUsed) return;
+    
+    try {
+      if (useMockApi) {
+        // Mock swap - just reload session
+        await loadSession();
+        setSwapUsed(true);
+        toast({
+          title: "Drill Swapped",
+          description: "Here's a new drill for you!",
+        });
+      } else {
+        const newDrill = await api.swapDrill(childId, drillId);
+        if (session) {
+          const updatedDrills = session.drills.map(drill => 
+            drill.id === drillId ? newDrill : drill
+          );
+          setSession({ ...session, drills: updatedDrills });
+        }
+        setSwapUsed(true);
+        toast({
+          title: "Drill Swapped",
+          description: "Here's a new drill for you!",
+        });
+      }
+    } catch (error) {
+      console.error('Error swapping drill:', error);
+      toast({
+        title: "Error swapping drill",
+        description: "Please try again",
+        variant: "destructive",
+      });
     }
   };
 
-  const completedDrills = Array.from(feedbackGiven).length;
-  const progressPercentage = session ? (completedDrills / session.drills.length) * 100 : 0;
+  const isSessionComplete = completedDrills.size >= 3;
+
+  if (!childId) {
+    return (
+      <div className="min-h-screen bg-gradient-primary p-4 flex items-center justify-center">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="p-8 text-center">
+            <h2 className="text-xl font-bold mb-4">Please Set Your Name</h2>
+            <p className="text-muted-foreground mb-4">
+              Go back to the home page to enter your name and start training.
+            </p>
+            <Button onClick={() => navigate('/')}>Go to Home</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mb-4 mx-auto"></div>
-          <p className="text-muted-foreground">Loading your training session...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-primary p-4 flex items-center justify-center">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading your training session...</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-primary p-4">
+      <div className="container mx-auto max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate("/")}
+            onClick={() => navigate('/')}
+            className="text-primary-foreground hover:bg-white/10"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Home
           </Button>
+          
+          <div className="text-primary-foreground">
+            <h1 className="text-2xl font-bold">Today's Training</h1>
+            <p className="text-primary-foreground/80">
+              {childId} • {equipment === "ball_only" ? "Ball Only" : "Ball + Markers"}
+            </p>
+          </div>
         </div>
 
-        {/* Progress Header */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="mb-4">
-              <h2 className="text-xl font-bold">Today's Training</h2>
-              <p className="text-muted-foreground">
-                {childId} • {equipment === "ball_only" ? "Ball Only" : "Ball + Cones"}
-              </p>
+        {/* Session Guard */}
+        <SessionGuard
+          hasCompletedSessionToday={isSessionComplete}
+          canStartNewSession={!isSessionComplete}
+          onStartBonus={() => navigate('/bonus')}
+          onViewParentSummary={() => navigate('/parent-summary')}
+        >
+          {/* Drill Cards */}
+          {session && (
+            <div className="space-y-6">
+              {session.drills.map((drill, index) => (
+                <DrillCard
+                  key={drill.id}
+                  drill={drill}
+                  childId={childId}
+                  mode="core"
+                  onFeedbackSubmit={handleDrillComplete}
+                  onNext={() => {}}
+                  canSwap={!swapUsed && !completedDrills.has(drill.id)}
+                  onSwapDrill={() => handleSwapDrill(drill.id)}
+                />
+              ))}
             </div>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <span>Progress</span>
-                <span>{completedDrills}/{session?.drills.length || 0} drills</span>
+          )}
+        </SessionGuard>
+
+        {/* Session Complete Actions */}
+        {isSessionComplete && (
+          <Card className="mt-8 shadow-glow border-success/20">
+            <CardContent className="p-6 text-center space-y-4">
+              <div className="text-4xl">🎉</div>
+              <div>
+                <h3 className="text-xl font-bold text-success">Session Complete!</h3>
+                <p className="text-muted-foreground">
+                  Amazing work! You've completed all 3 core drills for today.
+                </p>
               </div>
               
-              {/* Enhanced Progress Bar with Drill Segments */}
-              <div className="relative">
-                <div className="h-4 w-full bg-muted rounded-full overflow-hidden relative">
-                  {/* Drill Segments Background */}
-                  <div className="absolute inset-0 flex">
-                    {session?.drills.map((drill, index) => (
-                      <div
-                        key={drill.id}
-                        className={`flex-1 transition-all duration-500 ${
-                          feedbackGiven.has(drill.id)
-                            ? 'bg-primary'
-                            : 'bg-muted'
-                        } ${index > 0 ? 'border-l border-background' : ''}`}
-                      />
-                    )) || []}
-                  </div>
-                </div>
-                
-                {/* Drill Progress Indicators */}
-                <div className="flex justify-between mt-3">
-                  {session?.drills.map((drill, index) => (
-                    <div key={drill.id} className="flex flex-col items-center">
-                      <div 
-                        className={`w-4 h-4 rounded-full transition-all duration-300 border-2 ${
-                          feedbackGiven.has(drill.id) 
-                            ? 'bg-primary border-primary shadow-md scale-110' 
-                            : 'bg-background border-muted-foreground/40'
-                        }`}
-                      />
-                      <span className={`text-xs mt-1 font-medium transition-colors ${
-                        feedbackGiven.has(drill.id) 
-                          ? 'text-primary' 
-                          : 'text-muted-foreground'
-                      }`}>
-                        Drill {index + 1}
-                      </span>
-                    </div>
-                  )) || []}
-                </div>
-              </div>
-
-              {/* Next Session Button - Top */}
-              <Button
-                variant={completedDrills === session?.drills.length && session?.drills.length > 0 ? "default" : "secondary"}
-                disabled={completedDrills !== session?.drills.length || !session?.drills.length}
-                onClick={() => {
-                  loadSession(true);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className="w-full"
-                size="sm"
-              >
-                Next Session
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Session Note */}
-        {session?.note && (
-          <Card className="bg-muted/50">
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                {session.note}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Drill Cards */}
-        <div className="space-y-4">
-          {session?.drills.map((drill, index) => (
-            <Card key={drill.id} className="shadow-soft">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <CardTitle className="flex items-center gap-3">
-                      <span className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-                        {index + 1}
-                      </span>
-                      {drill.title}
-                    </CardTitle>
-                    <div className="flex items-center gap-3">
-                      <Badge className={getSkillColor(drill.skill)}>
-                        {drill.skill.replace("_", " ")}
-                      </Badge>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <div
-                              key={i}
-                              className={`w-2 h-2 rounded-full ${
-                                i < drill.level 
-                                  ? 'bg-primary' 
-                                  : 'bg-muted-foreground/30'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-xs text-muted-foreground font-medium">
-                          Level {drill.level}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {/* Why it matters */}
-                <div className="bg-primary/15 border border-primary/20 p-4 rounded-xl">
-                  <h4 className="font-semibold text-sm mb-2 text-primary">
-                    💡 Why this drill matters
-                  </h4>
-                  <p className="text-sm text-foreground">
-                    {drill.why_it_matters}
-                  </p>
-                </div>
-
-                {/* Instructions */}
-                <div>
-                  <h4 className="font-semibold mb-2">How to do it:</h4>
-                  <p className="text-sm leading-relaxed">
-                    {drill.instructions}
-                  </p>
-                </div>
-
-                {/* YouTube Link */}
-                {drill.youtube_url && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(drill.youtube_url, "_blank")}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Watch Video Guide
-                  </Button>
-                )}
-
-                {/* Feedback Buttons */}
-                <div className="border-t pt-4">
-                  <p className="text-sm font-medium mb-3">How did it feel?</p>
-                  <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2">
-                    {[
-                      { rating: "hard" as const, label: "Too Hard", icon: "🔴" },
-                      { rating: "right" as const, label: "Good", icon: "🟡" },
-                      { rating: "easy" as const, label: "Too Easy", icon: "🟢" }
-                    ].map(({ rating, label, icon }) => {
-                      const isSelected = drillFeedback[drill.id] === rating;
-                      return (
-                        <Button
-                          key={rating}
-                          variant={isSelected ? "success" : "outline"}
-                          size="sm"
-                          onClick={() => handleFeedback(drill.id, rating)}
-                          className={`h-12 text-xs font-medium transition-all ${
-                            isSelected 
-                              ? 'bg-primary text-primary-foreground border-primary' 
-                              : 'hover:border-primary hover:bg-primary/5'
-                          }`}
-                        >
-                          <span className="text-base mr-2">{icon}</span>
-                          {label}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Next Session Button - Bottom */}
-        <div className="flex justify-center">
-          <Button
-            variant={completedDrills === session?.drills.length && session?.drills.length > 0 ? "default" : "secondary"}
-            disabled={completedDrills !== session?.drills.length || !session?.drills.length}
-            onClick={() => {
-              loadSession(true);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="w-full max-w-xs"
-          >
-            Next Session
-          </Button>
-        </div>
-
-        {/* Completion Message */}
-        {completedDrills === session?.drills.length && session?.drills.length > 0 && (
-          <Card className="bg-gradient-success text-success-foreground text-center">
-            <CardContent className="p-6">
-              <div className="text-4xl mb-2">🎉</div>
-              <h3 className="text-xl font-bold mb-2">Amazing Work!</h3>
-              <p className="mb-4">You've completed all today's drills!</p>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
-                  variant="outline"
-                  onClick={() => navigate("/history")}
-                  className="flex-1 bg-white/20 border-white/40 text-white hover:bg-white/30"
+                  onClick={() => navigate('/bonus')}
+                  className="bg-gradient-primary text-primary-foreground hover:opacity-90"
                 >
-                  View Your Progress
+                  🌟 Try Bonus Drills
                 </Button>
                 <Button
+                  onClick={() => navigate('/showcase')}
                   variant="outline"
-                  onClick={() => navigate("/")}
-                  className="flex-1 bg-white/20 border-white/40 text-white hover:bg-white/30"
                 >
-                  Back to Home
+                  ⭐ View My Showcase
+                </Button>
+                <Button
+                  onClick={() => navigate('/parent-summary')}
+                  variant="outline"
+                >
+                  📊 Parent Summary
                 </Button>
               </div>
             </CardContent>

@@ -5,59 +5,78 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
 import { 
   Zap, 
   Target, 
   Users, 
   Trophy, 
-  TrendingUp, 
   Calendar,
   ChevronRight,
   Star,
-  Clock
+  Clock,
+  Settings
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { api, ParentSummary } from "@/services/api";
 import { mockApi } from "@/services/mockApi";
 import heroImage from "@/assets/hero-football-training.jpg";
 
 const Home = () => {
-  const [childId, setChildId] = useState("demo");
-  const [equipment, setEquipment] = useState<"ball_only" | "cones">("ball_only");
-  
-  const [parentSummary, setParentSummary] = useState<{
-    child_id: string;
-    feedback_counts: { easy: number; right: number; hard: number };
-    streak_days: number;
-    levels_progressed: Record<string, number>;
-  } | null>(null);
-  const [sessionHistory, setSessionHistory] = useState<any[]>([]);
+  const [childId, setChildId] = useState(() => localStorage.getItem('childId') || '');
+  const [equipment, setEquipment] = useState<"ball_only" | "ball_cones">("ball_only");
+  const [useMockApi, setUseMockApi] = useState(() => localStorage.getItem('useMockApi') !== 'false');
+  const [parentSummary, setParentSummary] = useState<ParentSummary | null>(null);
+  const [sessionStatus, setSessionStatus] = useState<'none' | 'in_progress' | 'complete'>('none');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Load user data on component mount and when returning to page
   useEffect(() => {
-    const loadData = () => {
-      if (childId) {
-        mockApi.getParentSummary(childId).then(summary => {
-          setParentSummary(summary);
+    // Save settings to localStorage
+    localStorage.setItem('childId', childId);
+    localStorage.setItem('useMockApi', useMockApi.toString());
+  }, [childId, useMockApi]);
+
+  useEffect(() => {
+    if (childId) {
+      loadDashboardData();
+    }
+  }, [childId, useMockApi]);
+
+  const loadDashboardData = async () => {
+    if (!childId) return;
+    
+    try {
+      setIsLoading(true);
+      
+      if (useMockApi) {
+        // Mock data
+        const mockSummary = await mockApi.getParentSummary(childId);
+        setParentSummary({
+          child_id: childId,
+          sessions_this_week: mockSummary.streak_days,
+          session_dates: [],
+          progress: [],
+          effort_mix: {
+            couldnt: mockSummary.feedback_counts.hard,
+            tough: mockSummary.feedback_counts.right,
+            easy: mockSummary.feedback_counts.easy
+          },
+          stuck_signals: [],
+          showcase: []
         });
-        
-        const history = mockApi.getSessionHistory(childId);
-        setSessionHistory(history);
+      } else {
+        // Real API
+        const summary = await api.getParentSummary(childId);
+        setParentSummary(summary);
       }
-    };
-
-    loadData();
-
-    // Refresh data when user returns to this page
-    const handleFocus = () => loadData();
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [childId]);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleStartSession = () => {
     if (!childId.trim()) {
@@ -69,28 +88,19 @@ const Home = () => {
       return;
     }
 
-    // Store selections in localStorage for the session
-    localStorage.setItem("currentChild", childId);
-    localStorage.setItem("currentEquipment", equipment);
+    // Store selections in localStorage
+    localStorage.setItem("childId", childId);
+    localStorage.setItem("equipment", equipment);
+    localStorage.setItem("useMockApi", useMockApi.toString());
     
     navigate("/session");
   };
 
-  const getRatingIcon = (rating: string) => {
-    switch (rating) {
-      case "easy": return "🟢";
-      case "right": return "🟡";
-      case "hard": return "🔴";
-      default: return "⚪";
-    }
-  };
-
-  const getProgressPercentage = () => {
+  const getTotalEffort = () => {
     if (!parentSummary) return 0;
-    const total = parentSummary.feedback_counts.easy + 
-                  parentSummary.feedback_counts.right + 
-                  parentSummary.feedback_counts.hard;
-    return Math.min((total / 20) * 100, 100); // Assume 20 drills = 100%
+    return parentSummary.effort_mix.couldnt + 
+           parentSummary.effort_mix.tough + 
+           parentSummary.effort_mix.easy;
   };
 
   return (
@@ -146,12 +156,35 @@ const Home = () => {
               />
             </div>
 
+            {/* API Mode Toggle */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                API Mode
+              </Label>
+              <div className="flex items-center space-x-3 p-3 rounded-lg border-2 border-border">
+                <Switch
+                  id="api-mode"
+                  checked={useMockApi}
+                  onCheckedChange={setUseMockApi}
+                />
+                <Label htmlFor="api-mode" className="flex-1 cursor-pointer">
+                  <div className="font-medium">
+                    {useMockApi ? "Mock API (Demo)" : "Real API"}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {useMockApi ? "Use demo data for testing" : "Connect to your backend"}
+                  </div>
+                </Label>
+              </div>
+            </div>
+
             {/* Equipment Selection */}
             <div className="space-y-3">
               <Label className="text-sm font-semibold">
                 Equipment Available
               </Label>
-              <RadioGroup value={equipment} onValueChange={(value: "ball_only" | "cones") => setEquipment(value)}>
+              <RadioGroup value={equipment} onValueChange={(value: "ball_only" | "ball_cones") => setEquipment(value)}>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-3 p-3 rounded-lg border-2 border-border hover:border-primary transition-colors">
                     <RadioGroupItem value="ball_only" id="ball-only" />
@@ -163,8 +196,8 @@ const Home = () => {
                     </Label>
                   </div>
                   <div className="flex items-center space-x-3 p-3 rounded-lg border-2 border-border hover:border-primary transition-colors">
-                    <RadioGroupItem value="cones" id="cones" />
-                    <Label htmlFor="cones" className="flex-1 cursor-pointer">
+                    <RadioGroupItem value="ball_cones" id="ball-cones" />
+                    <Label htmlFor="ball-cones" className="flex-1 cursor-pointer">
                       <div className="font-medium">Ball + Markers</div>
                       <div className="text-sm text-muted-foreground">
                         Agility & advanced drills
@@ -192,6 +225,36 @@ const Home = () => {
         <div className="max-w-md mx-auto space-y-3">
           <Button
             variant="drill"
+            onClick={() => navigate("/bonus")}
+            className="w-full justify-between text-left h-auto p-4"
+          >
+            <div className="flex items-center gap-3">
+              <Star className="h-5 w-5" />
+              <div>
+                <div className="font-semibold">Bonus Drills</div>
+                <div className="text-sm opacity-75">Extra practice when ready</div>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+
+          <Button
+            variant="drill"
+            onClick={() => navigate("/showcase")}
+            className="w-full justify-between text-left h-auto p-4"
+          >
+            <div className="flex items-center gap-3">
+              <Trophy className="h-5 w-5" />
+              <div>
+                <div className="font-semibold">My Showcase</div>
+                <div className="text-sm opacity-75">Skills I've mastered</div>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+
+          <Button
+            variant="drill"
             onClick={() => navigate("/history")}
             className="w-full justify-between text-left h-auto p-4"
           >
@@ -199,9 +262,7 @@ const Home = () => {
               <Calendar className="h-5 w-5" />
               <div>
                 <div className="font-semibold">Training History</div>
-                <div className="text-sm opacity-75">
-                  {sessionHistory.length > 0 ? `${sessionHistory.length} recent sessions` : 'No sessions yet'}
-                </div>
+                <div className="text-sm opacity-75">Past sessions</div>
               </div>
             </div>
             <ChevronRight className="h-5 w-5" />
@@ -222,55 +283,48 @@ const Home = () => {
             <ChevronRight className="h-5 w-5" />
           </Button>
 
-          {/* Reset Database Button */}
-          <Button
-            variant="outline"
-            onClick={() => {
-              mockApi.resetDatabase();
-              // Refresh the data
-              if (childId) {
-                mockApi.getParentSummary(childId).then(summary => {
-                  setParentSummary(summary);
+          {/* Reset Button - only show in mock mode */}
+          {useMockApi && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                mockApi.resetDatabase();
+                loadDashboardData();
+                toast({
+                  title: "Database Reset",
+                  description: "All training data has been cleared",
                 });
-                const history = mockApi.getSessionHistory(childId);
-                setSessionHistory(history);
-              }
-              toast({
-                title: "Database Reset",
-                description: "All training data has been cleared",
-              });
-            }}
-            className="w-full h-auto p-4 text-muted-foreground hover:text-foreground"
-          >
-            Reset Database
-          </Button>
+              }}
+              className="w-full h-auto p-4 text-muted-foreground hover:text-foreground"
+            >
+              Reset Database
+            </Button>
+          )}
         </div>
 
-        {/* Recent Activity Preview */}
-        {sessionHistory.length > 0 && (
+        {/* Quick Stats */}
+        {parentSummary && (
           <Card className="max-w-md mx-auto border-0 bg-white/10 backdrop-blur-sm text-white">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Recent Training
+                <Trophy className="h-5 w-5" />
+                This Week
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-2">
-                {sessionHistory.slice(0, 3).map((session, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 rounded bg-white/5">
-                    <div className="text-sm">
-                      {new Date(session.date).toLocaleDateString()}
-                    </div>
-                    <div className="flex gap-1">
-                      {session.drills.slice(0, 3).map((drill: any, idx: number) => (
-                        <span key={idx} className="text-xs">
-                          {getRatingIcon(drill.rating)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold">{parentSummary.sessions_this_week}</div>
+                  <div className="text-xs text-white/80">Sessions</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{getTotalEffort()}</div>
+                  <div className="text-xs text-white/80">Total Drills</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{parentSummary.showcase.length}</div>
+                  <div className="text-xs text-white/80">Showcased</div>
+                </div>
               </div>
             </CardContent>
           </Card>
