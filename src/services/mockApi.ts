@@ -425,6 +425,14 @@ export const mockApi = {
     return streakData[childId]?.streakDays || 0;
   },
 
+  // Reset all data to clean state
+  resetDatabase() {
+    feedbackHistory = [];
+    recentDrills = {};
+    streakData = {};
+    console.log("Database reset - all data cleared");
+  },
+
   // Helper to get session history for display
   getSessionHistory(childId: string) {
     // Return actual feedback history if available, otherwise mock data

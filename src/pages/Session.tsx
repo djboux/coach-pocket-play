@@ -121,9 +121,12 @@ const Session = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => loadSession(true)}
+              onClick={() => {
+                mockApi.resetDatabase();
+                loadSession(true);
+              }}
             >
-              Reload (Ignore Recent)
+              Reset Database
             </Button>
           </div>
         </div>
@@ -144,28 +147,41 @@ const Session = () => {
                 <span>{completedDrills}/{session?.drills.length || 0} drills</span>
               </div>
               
-              {/* Custom Progress with Drill Indicators */}
+              {/* Enhanced Progress Bar with Drill Segments */}
               <div className="relative">
-                <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary transition-all duration-500 ease-out"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
+                <div className="h-4 w-full bg-muted rounded-full overflow-hidden relative">
+                  {/* Drill Segments Background */}
+                  <div className="absolute inset-0 flex">
+                    {session?.drills.map((drill, index) => (
+                      <div
+                        key={drill.id}
+                        className={`flex-1 transition-all duration-500 ${
+                          feedbackGiven.has(drill.id)
+                            ? 'bg-primary'
+                            : 'bg-muted'
+                        } ${index > 0 ? 'border-l border-background' : ''}`}
+                      />
+                    )) || []}
+                  </div>
                 </div>
                 
-                {/* Drill Progress Dots */}
-                <div className="flex justify-between mt-2">
+                {/* Drill Progress Indicators */}
+                <div className="flex justify-between mt-3">
                   {session?.drills.map((drill, index) => (
                     <div key={drill.id} className="flex flex-col items-center">
                       <div 
-                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        className={`w-4 h-4 rounded-full transition-all duration-300 border-2 ${
                           feedbackGiven.has(drill.id) 
-                            ? 'bg-primary shadow-sm' 
-                            : 'bg-muted-foreground/30 border-2 border-muted-foreground/20'
+                            ? 'bg-primary border-primary shadow-md scale-110' 
+                            : 'bg-background border-muted-foreground/40'
                         }`}
                       />
-                      <span className="text-xs text-muted-foreground mt-1">
-                        {index + 1}
+                      <span className={`text-xs mt-1 font-medium transition-colors ${
+                        feedbackGiven.has(drill.id) 
+                          ? 'text-primary' 
+                          : 'text-muted-foreground'
+                      }`}>
+                        Drill {index + 1}
                       </span>
                     </div>
                   )) || []}
@@ -176,7 +192,10 @@ const Session = () => {
               <Button
                 variant={completedDrills === session?.drills.length && session?.drills.length > 0 ? "default" : "secondary"}
                 disabled={completedDrills !== session?.drills.length || !session?.drills.length}
-                onClick={() => loadSession(true)}
+                onClick={() => {
+                  loadSession(true);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
                 className="w-full"
                 size="sm"
               >
@@ -301,7 +320,10 @@ const Session = () => {
           <Button
             variant={completedDrills === session?.drills.length && session?.drills.length > 0 ? "default" : "secondary"}
             disabled={completedDrills !== session?.drills.length || !session?.drills.length}
-            onClick={() => loadSession(true)}
+            onClick={() => {
+              loadSession(true);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             className="w-full max-w-xs"
           >
             Next Session

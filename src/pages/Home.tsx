@@ -35,16 +35,28 @@ const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Load user data on component mount
+  // Load user data on component mount and when returning to page
   useEffect(() => {
-    if (childId) {
-      mockApi.getParentSummary(childId).then(summary => {
-        setParentSummary(summary);
-      });
-      
-      const history = mockApi.getSessionHistory(childId);
-      setSessionHistory(history);
-    }
+    const loadData = () => {
+      if (childId) {
+        mockApi.getParentSummary(childId).then(summary => {
+          setParentSummary(summary);
+        });
+        
+        const history = mockApi.getSessionHistory(childId);
+        setSessionHistory(history);
+      }
+    };
+
+    loadData();
+
+    // Refresh data when user returns to this page
+    const handleFocus = () => loadData();
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [childId]);
 
   const handleStartSession = () => {
