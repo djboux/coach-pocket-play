@@ -129,28 +129,57 @@ const Session = () => {
         {/* Progress Header */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-xl font-bold">Today's Training</h2>
-                <p className="text-muted-foreground">
-                  {childId} • {equipment === "ball_only" ? "Ball Only" : "Ball + Cones"}
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2 mb-1">
-                  <Flame className="h-5 w-5 text-secondary" />
-                  <span className="font-bold text-lg">{streak}</span>
-                </div>
-                <div className="text-xs text-muted-foreground">Day Streak</div>
-              </div>
+            <div className="mb-4">
+              <h2 className="text-xl font-bold">Today's Training</h2>
+              <p className="text-muted-foreground">
+                {childId} • {equipment === "ball_only" ? "Ball Only" : "Ball + Cones"}
+              </p>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span>Progress</span>
                 <span>{completedDrills}/{session?.drills.length || 0} drills</span>
               </div>
-              <Progress value={progressPercentage} className="h-2" />
+              
+              {/* Custom Progress with Drill Indicators */}
+              <div className="relative">
+                <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary transition-all duration-500 ease-out"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+                
+                {/* Drill Progress Dots */}
+                <div className="flex justify-between mt-2">
+                  {session?.drills.map((drill, index) => (
+                    <div key={drill.id} className="flex flex-col items-center">
+                      <div 
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          feedbackGiven.has(drill.id) 
+                            ? 'bg-primary shadow-sm' 
+                            : 'bg-muted-foreground/30 border-2 border-muted-foreground/20'
+                        }`}
+                      />
+                      <span className="text-xs text-muted-foreground mt-1">
+                        {index + 1}
+                      </span>
+                    </div>
+                  )) || []}
+                </div>
+              </div>
+
+              {/* Next Session Button - Top */}
+              <Button
+                variant={completedDrills === session?.drills.length && session?.drills.length > 0 ? "default" : "secondary"}
+                disabled={completedDrills !== session?.drills.length || !session?.drills.length}
+                onClick={() => loadSession(true)}
+                className="w-full"
+                size="sm"
+              >
+                Next Session
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -265,7 +294,7 @@ const Session = () => {
           ))}
         </div>
 
-        {/* Next Day Button - Always visible */}
+        {/* Next Session Button - Bottom */}
         <div className="flex justify-center">
           <Button
             variant={completedDrills === session?.drills.length && session?.drills.length > 0 ? "default" : "secondary"}
@@ -273,7 +302,7 @@ const Session = () => {
             onClick={() => loadSession(true)}
             className="w-full max-w-xs"
           >
-            Next Day
+            Next Session
           </Button>
         </div>
 

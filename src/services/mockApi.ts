@@ -427,20 +427,53 @@ export const mockApi = {
 
   // Helper to get session history for display
   getSessionHistory(childId: string) {
+    // Return actual feedback history if available, otherwise mock data
     const history = getChildHistory(childId);
-    const sessionDates = [...new Set(history.map(f => f.timestamp.toDateString()))];
     
-    return sessionDates.slice(0, 7).map(date => {
-      const dayFeedback = history.filter(f => f.timestamp.toDateString() === date);
-      const drills = dayFeedback.map(f => {
-        const drill = DRILL_LIBRARY.find(d => d.id === f.drill_id);
-        return {
-          title: drill?.title || "Unknown",
-          rating: f.rating
-        };
-      });
+    if (history.length > 0) {
+      const sessionDates = [...new Set(history.map(f => f.timestamp.toDateString()))];
       
-      return { date, drills };
-    });
+      return sessionDates.slice(0, 7).map(date => {
+        const dayFeedback = history.filter(f => f.timestamp.toDateString() === date);
+        const drills = dayFeedback.map(f => {
+          const drill = DRILL_LIBRARY.find(d => d.id === f.drill_id);
+          return {
+            title: drill?.title || "Unknown",
+            rating: f.rating
+          };
+        });
+        
+        return { date, drills };
+      });
+    }
+    
+    // Mock training history data with completed drills for demo
+    const mockHistory = [
+      {
+        date: new Date().toISOString(),
+        drills: [
+          { title: "Toe Taps", rating: "right" as const },
+          { title: "Figure-8 Dribble", rating: "easy" as const },
+          { title: "Wall Passes", rating: "right" as const }
+        ]
+      },
+      {
+        date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        drills: [
+          { title: "Cone Slalom", rating: "hard" as const },
+          { title: "Juggling Practice", rating: "right" as const },
+          { title: "Inside–Outside Touches", rating: "right" as const }
+        ]
+      },
+      {
+        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        drills: [
+          { title: "Step Over Practice", rating: "easy" as const },
+          { title: "Wall Passes", rating: "right" as const }
+        ]
+      }
+    ];
+    
+    return mockHistory;
   }
 };
