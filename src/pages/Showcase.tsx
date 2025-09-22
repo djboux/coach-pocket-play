@@ -58,8 +58,8 @@ const Showcase = () => {
             skill: drill.skill,
             requirements: 'ball_only',
             instructions: drill.instructions,
-            youtube_url: drill.videoUrl || undefined,
-            why_it_matters: drill.description || undefined
+            youtube_url: drill.youtube_url || undefined,
+            why_it_matters: drill.why_it_matters || undefined
           }
         }));
         setShowcaseItems(mockShowcaseItems);

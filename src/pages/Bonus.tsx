@@ -45,7 +45,7 @@ const Bonus = () => {
       
       if (storedUseMockApi) {
         // Use mock API - get some additional drills
-        const mockSession = await mockApi.getTodaySession(storedChildId, storedEquipment);
+        const mockSession = await mockApi.getTodaySession(storedChildId, storedEquipment as "ball_only" | "ball_cones");
         const mockBonusDrills: DrillRow[] = mockSession.drills.slice(3, 8).map(drill => ({
           id: drill.id + 1000, // Offset to avoid conflicts
           family_id: `bonus_${drill.id}`,
@@ -54,8 +54,8 @@ const Bonus = () => {
           skill: drill.skill,
             requirements: storedEquipment as "ball_only" | "ball_cones",
             instructions: drill.instructions,
-            youtube_url: drill.videoUrl || undefined,
-            why_it_matters: drill.description || undefined
+            youtube_url: drill.youtube_url || undefined,
+            why_it_matters: drill.why_it_matters || undefined
         }));
         setBonusDrills(mockBonusDrills);
       } else {
@@ -84,10 +84,14 @@ const Bonus = () => {
     try {
       if (useMockApi) {
         // Mock API call
-        await mockApi.submitFeedback(childId, feedback.drill_id, feedback.attempted ? (
-          feedback.felt === 'couldnt' ? 'hard' : 
-          feedback.felt === 'tough' ? 'right' : 'easy'
-        ) : 'skip');
+        await mockApi.submitFeedback({
+          child_id: childId,
+          drill_id: feedback.drill_id,
+          rating: feedback.attempted ? (
+            feedback.felt === 'couldnt' ? 'hard' : 
+            feedback.felt === 'tough' ? 'right' : 'easy'
+          ) : 'right'
+        });
 
         // Show special bonus message for level ups
         if (feedback.next_choice === 'level_up') {

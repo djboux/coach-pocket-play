@@ -7,7 +7,7 @@ export interface Drill {
   family: string; // Drill family name (e.g., "Toe Taps", "Inside-Outside Touches")
   skill: string;
   level: number;
-  requirements: "ball_only" | "cones";
+  requirements: "ball_only" | "ball_cones";
   instructions: string;
   youtube_url: string;
   why_it_matters: string;
@@ -175,7 +175,7 @@ const DRILL_LIBRARY: Drill[] = [
     family: "Cone Slalom",
     skill: "dribbling",
     level: 1,
-    requirements: "cones",
+    requirements: "ball_cones",
     instructions: "5 cones 1m apart. Slalom down and back once.",
     youtube_url: "https://www.youtube.com/watch?v=dummy11",
     why_it_matters: "Builds close control and agility."
@@ -186,7 +186,7 @@ const DRILL_LIBRARY: Drill[] = [
     family: "Cone Slalom",
     skill: "dribbling",
     level: 2,
-    requirements: "cones",
+    requirements: "ball_cones",
     instructions: "Slalom down and back twice in 30s.",
     youtube_url: "https://www.youtube.com/watch?v=dummy11",
     why_it_matters: "Builds close control and agility."
@@ -197,7 +197,7 @@ const DRILL_LIBRARY: Drill[] = [
     family: "Cone Slalom",
     skill: "dribbling",
     level: 3,
-    requirements: "cones",
+    requirements: "ball_cones",
     instructions: "Slalom down/back with weak foot only, twice.",
     youtube_url: "https://www.youtube.com/watch?v=dummy11",
     why_it_matters: "Builds weak foot and tight dribbling."
@@ -290,7 +290,7 @@ export const mockApi = {
   },
 
   // GET /session/today
-  async getTodaySession(childId: string, equipment: "ball_only" | "cones", ignoreRecent = false): Promise<SessionResponse> {
+  async getTodaySession(childId: string, equipment: "ball_only" | "ball_cones", ignoreRecent = false): Promise<SessionResponse> {
     // Filter drills by equipment
     const availableDrills = DRILL_LIBRARY.filter(d => d.requirements === equipment);
     

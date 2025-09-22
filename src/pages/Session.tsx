@@ -18,7 +18,7 @@ const Session = () => {
   const { toast } = useToast();
 
   const childId = localStorage.getItem("currentChild") || "demo";
-  const equipment = (localStorage.getItem("currentEquipment") as "ball_only" | "cones") || "ball_only";
+  const equipment = (localStorage.getItem("currentEquipment") as "ball_only" | "ball_cones") || "ball_only";
 
   useEffect(() => {
     loadSession();
