@@ -85,20 +85,10 @@ const ParentSummary = () => {
               <p className="text-muted-foreground">{childId}'s weekly progress snapshot</p>
             </div>
           </div>
-          <BarChart3 className="h-6 w-6 text-muted-foreground" />
         </div>
 
         {/* Key Metrics Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Streak Card */}
-          <Card className="bg-gradient-secondary text-secondary-foreground">
-            <CardContent className="p-6 text-center">
-              <Flame className="h-8 w-8 mx-auto mb-2" />
-              <div className="text-3xl font-bold mb-1">{summary?.streak_days || 0}</div>
-              <div className="text-sm opacity-90">Day Training Streak</div>
-            </CardContent>
-          </Card>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Total Sessions */}
           <Card className="bg-gradient-primary text-primary-foreground">
             <CardContent className="p-6 text-center">

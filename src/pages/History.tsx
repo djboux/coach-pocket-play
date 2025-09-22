@@ -159,20 +159,22 @@ const History = () => {
                           <div>
                             <span className="font-medium block">{drill.title}</span>
                             <span className="text-xs text-muted-foreground">
-                              Level {drill.level || 1} • {drill.instructions?.substring(0, 50) || 'No description'}...
+                              {drill.instructions?.substring(0, 50) || 'No description'}...
                             </span>
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-1">
-                          <Badge 
-                            variant="secondary"
-                            className={getRatingBadge(drill.rating)}
-                          >
-                            {drill.rating === "right" ? "Just right" : drill.rating}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            Lvl {drill.level || 1}
-                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            <Badge 
+                              variant="secondary"
+                              className={getRatingBadge(drill.rating)}
+                            >
+                              {drill.rating === "right" ? "Good" : drill.rating}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              Level {drill.level || 1}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -183,7 +185,7 @@ const History = () => {
                     <div className="flex gap-4">
                       <span className="flex items-center gap-1">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        {session.drills.filter(d => d.rating === "right").length} Just right
+                        {session.drills.filter(d => d.rating === "right").length} Good
                       </span>
                       <span className="flex items-center gap-1">
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
