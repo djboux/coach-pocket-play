@@ -13,27 +13,29 @@ export type DrillRow = {
   why_it_matters?: string;
 };
 
-export type SessionToday = {
+export type SessionTodayOut = {
+  session_id: number;
   child_id: string;
   drills: DrillRow[];
 };
 
 export type FeedbackIn = {
   child_id: string;
+  session_id: number;
   drill_id: number;
   attempted: boolean;
-  felt?: "couldnt" | "tough" | "easy";
-  next_choice?: "keep" | "easier" | "same" | "tiny_challenge" | "level_up" | "repeat" | "showcase";
-  mode: "core" | "bonus";
+  difficulty_rating?: "could_not_do" | "challenging" | "easy";
+  next_action?: "repeat_same" | "make_easier" | "tiny_challenge" | "level_up" | "repeat_for_fun" | "add_to_showcase";
+  session_mode: "core" | "bonus";
 };
 
-export type ParentSummary = {
+export type ParentSummaryOut = {
   child_id: string;
   sessions_this_week: number;
   session_dates: string[];
   progress: Array<{ family_id: string; delta: "up" | "same" | "down" }>;
-  effort_mix: { couldnt: number; tough: number; easy: number };
-  stuck_signals: Array<{ family_id: string; consecutive_couldnt: number }>;
+  effort_mix: { could_not_do: number; challenging: number; easy: number };
+  stuck_signals: Array<{ family_id: string; consecutive_could_not_do: number }>;
   showcase: Array<{ family_id: string; level: number; ready_to_demo: boolean }>;
 };
 
@@ -46,7 +48,7 @@ const handleResponse = async (response: Response) => {
 
 export const api = {
   // Get today's session drills
-  async getSessionToday(childId: string, equipment: string, ignoreRecent = false): Promise<SessionToday> {
+  async getSessionToday(childId: string, equipment: string, ignoreRecent = false): Promise<SessionTodayOut> {
     const params = new URLSearchParams({
       child_id: childId,
       equipment,
@@ -70,7 +72,7 @@ export const api = {
   },
 
   // Get parent summary
-  async getParentSummary(childId: string): Promise<ParentSummary> {
+  async getParentSummary(childId: string): Promise<ParentSummaryOut> {
     const params = new URLSearchParams({ child_id: childId });
     const response = await fetch(`/parent/summary?${params}`);
     return handleResponse(response);

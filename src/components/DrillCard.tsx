@@ -17,8 +17,8 @@ interface DrillCardProps {
 }
 
 type Step = 'attempt' | 'feeling' | 'choice' | 'complete';
-type Feeling = 'couldnt' | 'tough' | 'easy';
-type NextChoice = 'keep' | 'easier' | 'same' | 'tiny_challenge' | 'level_up' | 'repeat' | 'showcase';
+type Feeling = 'could_not_do' | 'challenging' | 'easy';
+type NextChoice = 'repeat_same' | 'make_easier' | 'tiny_challenge' | 'level_up' | 'repeat_for_fun' | 'add_to_showcase';
 
 export const DrillCard = ({ 
   drill, 
@@ -73,9 +73,10 @@ export const DrillCard = ({
       child_id: childId,
       drill_id: drill.id,
       attempted: didAttempt,
-      felt: selectedFeeling,
-      next_choice: choice,
-      mode,
+      difficulty_rating: selectedFeeling,
+      next_action: choice,
+      session_mode: mode,
+      session_id: 1, // Mock session ID
     };
 
     try {
@@ -168,7 +169,7 @@ export const DrillCard = ({
       
       <div className="space-y-3">
         <Button 
-          onClick={() => handleFeelingResponse('couldnt')}
+          onClick={() => handleFeelingResponse('could_not_do')}
           variant="outline"
           className="w-full text-left justify-start"
           size="lg"
@@ -178,7 +179,7 @@ export const DrillCard = ({
         </Button>
         
         <Button 
-          onClick={() => handleFeelingResponse('tough')}
+          onClick={() => handleFeelingResponse('challenging')}
           className="w-full text-left justify-start bg-gradient-primary text-primary-foreground hover:opacity-90"
           size="lg"
         >
@@ -202,7 +203,7 @@ export const DrillCard = ({
   const renderChoiceStep = () => {
     if (!feeling) return null;
 
-    if (feeling === 'couldnt') {
+    if (feeling === 'could_not_do') {
       return (
         <div className="space-y-6">
           <div className="text-center">
@@ -212,7 +213,7 @@ export const DrillCard = ({
           
           <div className="space-y-3">
             <Button 
-              onClick={() => handleNextChoice('keep')}
+              onClick={() => handleNextChoice('repeat_same')}
               className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90"
               size="lg"
               disabled={isSubmitting}
@@ -222,7 +223,7 @@ export const DrillCard = ({
             
             {drill.level > 1 && (
               <Button 
-                onClick={() => handleNextChoice('easier')}
+                onClick={() => handleNextChoice('make_easier')}
                 variant="outline"
                 className="w-full"
                 size="lg"
@@ -236,7 +237,7 @@ export const DrillCard = ({
       );
     }
 
-    if (feeling === 'tough') {
+    if (feeling === 'challenging') {
       return (
         <div className="space-y-6">
           <div className="text-center">
@@ -246,7 +247,7 @@ export const DrillCard = ({
           
           <div className="space-y-3">
             <Button 
-              onClick={() => handleNextChoice('same')}
+              onClick={() => handleNextChoice('repeat_same')}
               className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90"
               size="lg"
               disabled={isSubmitting}
@@ -286,7 +287,7 @@ export const DrillCard = ({
             </Button>
             
             <Button 
-              onClick={() => handleNextChoice('repeat')}
+              onClick={() => handleNextChoice('repeat_for_fun')}
               variant="outline"
               className="w-full"
               size="lg"

@@ -85,16 +85,12 @@ const Bonus = () => {
       if (useMockApi) {
         // Mock API call
         await mockApi.submitFeedback({
-          child_id: childId,
-          drill_id: feedback.drill_id,
-          rating: feedback.attempted ? (
-            feedback.felt === 'couldnt' ? 'hard' : 
-            feedback.felt === 'tough' ? 'right' : 'easy'
-          ) : 'right'
+          ...feedback,
+          session_id: 1 // Mock session ID
         });
 
         // Show special bonus message for level ups
-        if (feedback.next_choice === 'level_up') {
+        if (feedback.next_action === 'level_up') {
           toast({
             title: "Great work! 🌟",
             description: "Bonus progress will count tomorrow!",

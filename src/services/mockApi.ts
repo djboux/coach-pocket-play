@@ -13,27 +13,42 @@ export interface Drill {
   why_it_matters: string;
 }
 
-export interface SessionResponse {
+export interface SessionTodayOut {
+  session_id: number;
   child_id: string;
-  drills: Drill[];
-  note: string;
+  drills: DrillRow[];
 }
 
-export interface FeedbackRequest {
+export interface DrillRow {
+  id: number;
+  family_id: string;
+  title: string;
+  level: number;
+  skill: string;
+  requirements: "ball_only" | "ball_cones";
+  instructions: string;
+  youtube_url?: string;
+  why_it_matters?: string;
+}
+
+export interface FeedbackIn {
   child_id: string;
+  session_id: number;
   drill_id: number;
-  rating: "easy" | "right" | "hard";
+  attempted: boolean;
+  difficulty_rating?: "could_not_do" | "challenging" | "easy";
+  next_action?: "repeat_same" | "make_easier" | "tiny_challenge" | "level_up" | "repeat_for_fun" | "add_to_showcase";
+  session_mode: "core" | "bonus";
 }
 
-export interface ParentSummary {
+export interface ParentSummaryOut {
   child_id: string;
-  feedback_counts: {
-    easy: number;
-    right: number;
-    hard: number;
-  };
-  streak_days: number;
-  levels_progressed: Record<string, number>;
+  sessions_this_week: number;
+  session_dates: string[];
+  progress: Array<{ family_id: string; delta: "up" | "same" | "down" }>;
+  effort_mix: { could_not_do: number; challenging: number; easy: number };
+  stuck_signals: Array<{ family_id: string; consecutive_could_not_do: number }>;
+  showcase: Array<{ family_id: string; level: number; ready_to_demo: boolean }>;
 }
 
 const DRILL_LIBRARY: Drill[] = [
@@ -238,10 +253,10 @@ const DRILL_LIBRARY: Drill[] = [
   }
 ];
 
-// Mock storage for persistence
-let feedbackHistory: Array<FeedbackRequest & { timestamp: Date }> = [];
+// Mock storage for persistence  
+let feedbackHistory: Array<FeedbackIn & { timestamp: Date }> = [];
 let recentDrills: Record<string, number[]> = {}; // child_id -> drill IDs from last session
-let streakData: Record<string, { lastSession: Date; streakDays: number }> = {};
+let sessionIdCounter = 1;
 
 // Helper functions
 function getChildHistory(childId: string) {
@@ -264,19 +279,19 @@ function getNextLevel(childId: string, drillFamily: Drill[], currentLevel: numbe
 
   if (!latestFeedback) return currentLevel;
 
-  switch (latestFeedback.rating) {
+  switch (latestFeedback.difficulty_rating) {
     case "easy":
       return Math.min(7, currentLevel + 1);
-    case "hard":
+    case "could_not_do":
       return Math.max(1, currentLevel - 1);
-    case "right":
+    case "challenging":
       // Stay same level once more, then bump next time
-      const rightCount = feedbackHistory
+      const challengingCount = feedbackHistory
         .filter(f => f.child_id === childId)
         .filter(f => drillFamily.some(d => d.id === f.drill_id))
-        .filter(f => f.rating === "right")
+        .filter(f => f.difficulty_rating === "challenging")
         .length;
-      return rightCount >= 2 ? Math.min(7, currentLevel + 1) : currentLevel;
+      return challengingCount >= 2 ? Math.min(7, currentLevel + 1) : currentLevel;
     default:
       return currentLevel;
   }
@@ -290,7 +305,7 @@ export const mockApi = {
   },
 
   // GET /session/today
-  async getTodaySession(childId: string, equipment: "ball_only" | "ball_cones", ignoreRecent = false): Promise<SessionResponse> {
+  async getTodaySession(childId: string, equipment: "ball_only" | "ball_cones", ignoreRecent = false): Promise<SessionTodayOut> {
     // Filter drills by equipment
     const availableDrills = DRILL_LIBRARY.filter(d => d.requirements === equipment);
     
@@ -335,155 +350,88 @@ export const mockApi = {
     // Update recent drills
     recentDrills[childId] = selectedDrills.map(d => d.id);
 
+    // Convert Drill[] to DrillRow[]
+    const drillRows: DrillRow[] = selectedDrills.map(drill => ({
+      id: drill.id,
+      family_id: drill.family,
+      title: drill.title,
+      level: drill.level,
+      skill: drill.skill,
+      requirements: drill.requirements,
+      instructions: drill.instructions,
+      youtube_url: drill.youtube_url,
+      why_it_matters: drill.why_it_matters
+    }));
+
     return {
+      session_id: sessionIdCounter++,
       child_id: childId,
-      drills: selectedDrills,
-      note: ignoreRecent ? "Variety + progression swap active (ignore recent enabled)" : "Variety + progression swap active"
+      drills: drillRows
     };
   },
 
   // POST /feedback
-  async submitFeedback(feedback: FeedbackRequest) {
+  async submitFeedback(feedback: FeedbackIn) {
     feedbackHistory.push({
       ...feedback,
       timestamp: new Date()
     });
 
-    // Update streak
-    const today = new Date().toDateString();
-    const streak = streakData[feedback.child_id] || { lastSession: new Date(0), streakDays: 0 };
-    
-    if (streak.lastSession.toDateString() === today) {
-      // Already trained today, don't increment
-    } else if (new Date(streak.lastSession.getTime() + 24 * 60 * 60 * 1000).toDateString() === today) {
-      // Consecutive day
-      streak.streakDays += 1;
-      streak.lastSession = new Date();
-    } else {
-      // Streak broken, restart
-      streak.streakDays = 1;
-      streak.lastSession = new Date();
-    }
-    
-    streakData[feedback.child_id] = streak;
-
     return { ok: true };
   },
 
   // GET /parent/summary
-  async getParentSummary(childId: string): Promise<ParentSummary> {
+  async getParentSummary(childId: string): Promise<ParentSummaryOut> {
     const history = getChildHistory(childId);
-    const feedbackCounts = {
-      easy: history.filter(f => f.rating === "easy").length,
-      right: history.filter(f => f.rating === "right").length,
-      hard: history.filter(f => f.rating === "hard").length
+    const effortMix = {
+      could_not_do: history.filter(f => f.difficulty_rating === "could_not_do").length,
+      challenging: history.filter(f => f.difficulty_rating === "challenging").length,
+      easy: history.filter(f => f.difficulty_rating === "easy").length
     };
 
-    const streakDays = streakData[childId]?.streakDays || 0;
+    // Mock data for other fields
+    const sessionsThisWeek = Math.floor(Math.random() * 7) + 1;
+    const sessionDates = Array.from({ length: sessionsThisWeek }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      return date.toISOString().split('T')[0];
+    });
 
-    // Calculate levels progressed by skill
-    const levelsProgressed: Record<string, number> = {};
-    const skills = [...new Set(DRILL_LIBRARY.map(d => d.skill))];
-    
-    for (const skill of skills) {
-      const skillDrills = DRILL_LIBRARY.filter(d => d.skill === skill);
-      const skillFeedback = history.filter(f => 
-        skillDrills.some(d => d.id === f.drill_id)
-      );
-      
-      // Count level-ups from "easy" feedback
-      levelsProgressed[skill] = skillFeedback.filter(f => f.rating === "easy").length;
-    }
+    const progress = [
+      { family_id: "Toe Taps", delta: "up" as const },
+      { family_id: "Figure-8 Dribble", delta: "same" as const },
+      { family_id: "Wall Passes", delta: "down" as const }
+    ];
+
+    const stuckSignals = [
+      { family_id: "Cone Slalom", consecutive_could_not_do: 2 }
+    ];
+
+    const showcase = [
+      { family_id: "Juggling Practice", level: 2, ready_to_demo: true },
+      { family_id: "Step Over Practice", level: 1, ready_to_demo: false }
+    ];
 
     return {
       child_id: childId,
-      feedback_counts: feedbackCounts,
-      streak_days: streakDays,
-      levels_progressed: levelsProgressed
+      sessions_this_week: sessionsThisWeek,
+      session_dates: sessionDates,
+      progress: progress,
+      effort_mix: effortMix,
+      stuck_signals: stuckSignals,
+      showcase: showcase
     };
   },
 
-  // GET /debug/feedback - for testing
-  async getDebugFeedback(childId?: string, drillId?: number) {
-    let filtered = feedbackHistory;
-    
-    if (childId) {
-      filtered = filtered.filter(f => f.child_id === childId);
-    }
-    
-    if (drillId) {
-      filtered = filtered.filter(f => f.drill_id === drillId);
-    }
-    
-    return filtered
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, 10); // Last 10
-  },
-
-  // Helper to get current streak
-  getStreak(childId: string): number {
-    return streakData[childId]?.streakDays || 0;
-  },
-
-  // Reset all data to clean state
+  // Remove remaining mock code that references old fields
   resetDatabase() {
     feedbackHistory = [];
     recentDrills = {};
-    streakData = {};
     console.log("Database reset - all data cleared");
   },
 
-  // Helper to get session history for display
+  // Helper to get session history for display (mock implementation)
   getSessionHistory(childId: string) {
-    // Return actual feedback history if available, otherwise mock data
-    const history = getChildHistory(childId);
-    
-    if (history.length > 0) {
-      const sessionDates = [...new Set(history.map(f => f.timestamp.toDateString()))];
-      
-      return sessionDates.slice(0, 7).map(date => {
-        const dayFeedback = history.filter(f => f.timestamp.toDateString() === date);
-        const drills = dayFeedback.map(f => {
-          const drill = DRILL_LIBRARY.find(d => d.id === f.drill_id);
-          return {
-            title: drill?.title || "Unknown",
-            rating: f.rating,
-            level: drill?.level || 1,
-            instructions: drill?.instructions || ""
-          };
-        });
-        
-        return { date, drills };
-      });
-    }
-    
-    // Mock training history data with completed drills for demo
-    const mockHistory = [
-      {
-        date: new Date().toISOString(),
-        drills: [
-          { title: "Toe Taps", rating: "right" as const, level: 2, instructions: "Alternate taps with both feet. Goal: 30 in 30s." },
-          { title: "Figure-8 Dribble", rating: "easy" as const, level: 1, instructions: "Dribble in a figure-8 around two objects (use shoes). 3 laps." },
-          { title: "Wall Passes", rating: "right" as const, level: 3, instructions: "40 alternating-foot passes." }
-        ]
-      },
-      {
-        date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        drills: [
-          { title: "Cone Slalom", rating: "hard" as const, level: 2, instructions: "Slalom down and back twice in 30s." },
-          { title: "Juggling Practice", rating: "right" as const, level: 1, instructions: "Keep the ball up using feet only. Goal: 5 touches." },
-          { title: "Inside–Outside Touches", rating: "right" as const, level: 2, instructions: "30 cycles at faster pace." }
-        ]
-      },
-      {
-        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        drills: [
-          { title: "Step Over Practice", rating: "easy" as const, level: 1, instructions: "Step over the ball with each foot. 10 each side." },
-          { title: "Wall Passes", rating: "right" as const, level: 1, instructions: "20 passes with right foot against a wall." }
-        ]
-      }
-    ];
-    
-    return mockHistory;
+    return [];
   }
 };

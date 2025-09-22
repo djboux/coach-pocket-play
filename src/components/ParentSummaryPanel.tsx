@@ -2,11 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ParentSummary } from '@/services/api';
+import { ParentSummaryOut } from '@/services/api';
 import { ArrowUp, ArrowDown, Minus, AlertTriangle, TrendingUp, Calendar } from 'lucide-react';
 
 interface ParentSummaryPanelProps {
-  summary: ParentSummary;
+  summary: ParentSummaryOut;
   onShowDrill?: (familyId: string) => void;
 }
 
@@ -34,7 +34,7 @@ export const ParentSummaryPanel = ({ summary, onShowDrill }: ParentSummaryPanelP
   };
 
   const getTotalFeedback = () => {
-    return summary.effort_mix.couldnt + summary.effort_mix.tough + summary.effort_mix.easy;
+    return summary.effort_mix.could_not_do + summary.effort_mix.challenging + summary.effort_mix.easy;
   };
 
   const getEngagementPercentage = () => {
@@ -42,7 +42,7 @@ export const ParentSummaryPanel = ({ summary, onShowDrill }: ParentSummaryPanelP
     if (total === 0) return 0;
     
     // Calculate engagement: tough and easy attempts show engagement
-    const engaged = summary.effort_mix.tough + summary.effort_mix.easy;
+    const engaged = summary.effort_mix.challenging + summary.effort_mix.easy;
     return Math.round((engaged / total) * 100);
   };
 
@@ -140,12 +140,12 @@ export const ParentSummaryPanel = ({ summary, onShowDrill }: ParentSummaryPanelP
           <div className="grid gap-4 md:grid-cols-3">
             <div className="text-center">
               <div className="text-2xl mb-1">😣</div>
-              <p className="text-lg font-semibold">{summary.effort_mix.couldnt}</p>
+              <p className="text-lg font-semibold">{summary.effort_mix.could_not_do}</p>
               <p className="text-xs text-muted-foreground">Couldn't do yet</p>
             </div>
             <div className="text-center">
               <div className="text-2xl mb-1">💪</div>
-              <p className="text-lg font-semibold">{summary.effort_mix.tough}</p>
+              <p className="text-lg font-semibold">{summary.effort_mix.challenging}</p>
               <p className="text-xs text-muted-foreground">Tough but did it</p>
             </div>
             <div className="text-center">
@@ -189,7 +189,7 @@ export const ParentSummaryPanel = ({ summary, onShowDrill }: ParentSummaryPanelP
                   <div>
                     <p className="font-medium">{signal.family_id}</p>
                     <p className="text-sm text-muted-foreground">
-                      {signal.consecutive_couldnt} consecutive "couldn't do it" responses
+                      {signal.consecutive_could_not_do} consecutive "couldn't do it" responses
                     </p>
                   </div>
                   <Button

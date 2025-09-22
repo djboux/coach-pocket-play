@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { mockApi, type ParentSummary as ParentSummaryType } from "@/services/mockApi";
-import { ArrowLeft, TrendingUp, Flame, Target, BarChart3, Clock, Trophy } from "lucide-react";
+import { mockApi, type ParentSummaryOut as ParentSummaryType } from "@/services/mockApi";
+import { ArrowLeft, TrendingUp, Target, BarChart3, Clock, Trophy } from "lucide-react";
 
 const ParentSummary = () => {
   const [summary, setSummary] = useState<ParentSummaryType | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const childId = localStorage.getItem("currentChild") || "demo";
+  const childId = localStorage.getItem("childId") || "demo";
 
   useEffect(() => {
     loadSummary();
@@ -32,12 +32,7 @@ const ParentSummary = () => {
 
   const getTotalFeedback = () => {
     if (!summary) return 0;
-    return summary.feedback_counts.easy + summary.feedback_counts.right + summary.feedback_counts.hard;
-  };
-
-  const getSkillProgress = (skill: string, levels: number) => {
-    // Convert levels progressed to a percentage (assuming max 7 levels per skill)
-    return Math.min((levels / 7) * 100, 100);
+    return summary.effort_mix.could_not_do + summary.effort_mix.challenging + summary.effort_mix.easy;
   };
 
   const getEngagementScore = () => {
@@ -46,11 +41,10 @@ const ParentSummary = () => {
     if (total === 0) return 0;
     
     // Calculate engagement based on feedback distribution
-    // "right" ratings show good engagement, "easy" shows progress, "hard" shows challenge
-    const { easy, right, hard } = summary.feedback_counts;
-    const balanceScore = Math.min(right / total * 100, 70); // Up to 70% for balanced ratings
+    const { could_not_do, challenging, easy } = summary.effort_mix;
+    const balanceScore = Math.min(challenging / total * 100, 70); // Up to 70% for balanced ratings
     const progressScore = Math.min(easy / total * 100 * 0.5, 20); // Up to 20% for progression
-    const streakBonus = Math.min(summary.streak_days * 2, 10); // Up to 10% for consistency
+    const streakBonus = Math.min(summary.sessions_this_week * 2, 10); // Up to 10% for consistency
     
     return Math.round(balanceScore + progressScore + streakBonus);
   };
@@ -93,8 +87,8 @@ const ParentSummary = () => {
           <Card className="bg-gradient-primary text-primary-foreground">
             <CardContent className="p-6 text-center">
               <Target className="h-8 w-8 mx-auto mb-2" />
-              <div className="text-3xl font-bold mb-1">{getTotalFeedback()}</div>
-              <div className="text-sm opacity-90">Total Drills Completed</div>
+              <div className="text-3xl font-bold mb-1">{summary?.sessions_this_week || 0}</div>
+              <div className="text-sm opacity-90">Sessions This Week</div>
             </CardContent>
           </Card>
 
@@ -113,7 +107,7 @@ const ParentSummary = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              Training Feedback
+              Training Effort Mix
             </CardTitle>
             <CardDescription>
               How {childId} is finding the difficulty of drills
@@ -124,42 +118,42 @@ const ParentSummary = () => {
               <>
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div className="text-center p-4 bg-green-50 rounded-xl">
-                    <div className="text-2xl font-bold text-green-600">{summary.feedback_counts.right}</div>
-                    <div className="text-sm text-green-700">Just Right</div>
+                    <div className="text-2xl font-bold text-green-600">{summary.effort_mix.challenging}</div>
+                    <div className="text-sm text-green-700">Challenging</div>
                     <div className="text-xs text-green-600 mt-1">Perfect challenge level</div>
                   </div>
                   <div className="text-center p-4 bg-blue-50 rounded-xl">
-                    <div className="text-2xl font-bold text-blue-600">{summary.feedback_counts.easy}</div>
-                    <div className="text-sm text-blue-700">Too Easy</div>
+                    <div className="text-2xl font-bold text-blue-600">{summary.effort_mix.easy}</div>
+                    <div className="text-sm text-blue-700">Easy</div>
                     <div className="text-xs text-blue-600 mt-1">Ready for harder drills</div>
                   </div>
                   <div className="text-center p-4 bg-red-50 rounded-xl">
-                    <div className="text-2xl font-bold text-red-600">{summary.feedback_counts.hard}</div>
-                    <div className="text-sm text-red-700">Too Hard</div>
+                    <div className="text-2xl font-bold text-red-600">{summary.effort_mix.could_not_do}</div>
+                    <div className="text-sm text-red-700">Couldn't Do</div>
                     <div className="text-xs text-red-600 mt-1">Needs more practice</div>
                   </div>
                 </div>
 
                 {getTotalFeedback() > 0 && (
                   <div className="space-y-2">
-                    <div className="text-sm font-medium">Feedback Distribution</div>
+                    <div className="text-sm font-medium">Effort Distribution</div>
                     <div className="flex h-3 rounded-full overflow-hidden bg-muted">
-                      {summary.feedback_counts.right > 0 && (
+                      {summary.effort_mix.challenging > 0 && (
                         <div 
                           className="bg-green-500" 
-                          style={{ width: `${(summary.feedback_counts.right / getTotalFeedback()) * 100}%` }}
+                          style={{ width: `${(summary.effort_mix.challenging / getTotalFeedback()) * 100}%` }}
                         />
                       )}
-                      {summary.feedback_counts.easy > 0 && (
+                      {summary.effort_mix.easy > 0 && (
                         <div 
                           className="bg-blue-500" 
-                          style={{ width: `${(summary.feedback_counts.easy / getTotalFeedback()) * 100}%` }}
+                          style={{ width: `${(summary.effort_mix.easy / getTotalFeedback()) * 100}%` }}
                         />
                       )}
-                      {summary.feedback_counts.hard > 0 && (
+                      {summary.effort_mix.could_not_do > 0 && (
                         <div 
                           className="bg-red-500" 
-                          style={{ width: `${(summary.feedback_counts.hard / getTotalFeedback()) * 100}%` }}
+                          style={{ width: `${(summary.effort_mix.could_not_do / getTotalFeedback()) * 100}%` }}
                         />
                       )}
                     </div>
@@ -170,7 +164,7 @@ const ParentSummary = () => {
           </CardContent>
         </Card>
 
-        {/* Skill Progression */}
+        {/* Progress Tracking */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -182,24 +176,23 @@ const ParentSummary = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {summary && Object.keys(summary.levels_progressed).length > 0 ? (
-              Object.entries(summary.levels_progressed).map(([skill, levels]) => (
-                <div key={skill} className="space-y-2">
+            {summary && summary.progress.length > 0 ? (
+              summary.progress.map((prog) => (
+                <div key={prog.family_id} className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium capitalize">
-                      {skill.replace("_", " ")}
+                    <span className="font-medium">
+                      {prog.family_id}
                     </span>
-                    <Badge variant="secondary">
-                      +{levels} level{levels !== 1 ? 's' : ''}
+                    <Badge 
+                      variant={prog.delta === 'up' ? 'default' : prog.delta === 'down' ? 'destructive' : 'secondary'}
+                    >
+                      {prog.delta === 'up' ? '↑ Improved' : prog.delta === 'down' ? '↓ Needs work' : '→ Steady'}
                     </Badge>
                   </div>
                   <Progress 
-                    value={getSkillProgress(skill, levels)} 
+                    value={prog.delta === 'up' ? 75 : prog.delta === 'same' ? 50 : 25} 
                     className="h-2"
                   />
-                  <div className="text-xs text-muted-foreground">
-                    {levels > 0 ? `Progressed ${levels} level${levels !== 1 ? 's' : ''} this week` : 'Working on fundamentals'}
-                  </div>
                 </div>
               ))
             ) : (
@@ -213,82 +206,69 @@ const ParentSummary = () => {
           </CardContent>
         </Card>
 
-        {/* Recommendations */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Training Recommendations</CardTitle>
-            <CardDescription>
-              Suggestions based on {childId}'s progress
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {summary && (
-                <>
-                  {summary.streak_days === 0 && (
-                    <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                      <div>
-                        <div className="font-medium">Get Started!</div>
-                        <div className="text-sm text-muted-foreground">
-                          Begin with regular training sessions to build habits and track progress.
-                        </div>
+        {/* Stuck Signals */}
+        {summary && summary.stuck_signals.length > 0 && (
+          <Card className="border-warning">
+            <CardHeader>
+              <CardTitle className="text-warning">Areas Needing Attention</CardTitle>
+              <CardDescription>
+                Skills that may need easier practice
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {summary.stuck_signals.map((signal) => (
+                  <div key={signal.family_id} className="flex items-center justify-between p-3 bg-warning/10 rounded-lg">
+                    <div>
+                      <div className="font-medium">{signal.family_id}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {signal.consecutive_could_not_do} consecutive sessions struggling
                       </div>
                     </div>
-                  )}
-                  
-                  {summary.streak_days > 0 && summary.streak_days < 7 && (
-                    <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                      <div>
-                        <div className="font-medium">Building Momentum!</div>
-                        <div className="text-sm text-muted-foreground">
-                          Great start! Try to maintain daily training to build a solid foundation.
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                    <Button variant="outline" size="sm">
+                      Suggest easier level
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-                  {summary.feedback_counts.easy > summary.feedback_counts.right && (
-                    <div className="flex items-start gap-3 p-3 bg-orange-50 rounded-lg">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+        {/* Showcase */}
+        {summary && summary.showcase.length > 0 && (
+          <Card className="border-success">
+            <CardHeader>
+              <CardTitle className="text-success">Showcase Highlights</CardTitle>
+              <CardDescription>
+                Skills ready to show off
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {summary.showcase.map((item) => (
+                  <div key={item.family_id} className="flex items-center justify-between p-3 bg-success/10 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="text-lg">⭐</div>
                       <div>
-                        <div className="font-medium">Ready for More Challenge</div>
-                        <div className="text-sm text-muted-foreground">
-                          {childId} is finding drills too easy. The app will automatically increase difficulty.
-                        </div>
+                        <div className="font-medium">{item.family_id}</div>
+                        <div className="text-sm text-muted-foreground">Level {item.level}</div>
                       </div>
+                      {item.ready_to_demo && (
+                        <Badge className="bg-success text-success-foreground">
+                          Ready to demo
+                        </Badge>
+                      )}
                     </div>
-                  )}
-
-                  {summary.feedback_counts.hard > summary.feedback_counts.right && (
-                    <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
-                      <div>
-                        <div className="font-medium">Focus on Fundamentals</div>
-                        <div className="text-sm text-muted-foreground">
-                          Some drills are challenging. The app will adjust to build confidence gradually.
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {summary.streak_days >= 7 && (
-                    <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-                      <div>
-                        <div className="font-medium">Amazing Consistency!</div>
-                        <div className="text-sm text-muted-foreground">
-                          {childId} has built a great training habit. Consider adding equipment for variety.
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                    <Button variant="outline" size="sm">
+                      Show video
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Action Buttons */}
         <div className="flex gap-3">
@@ -301,10 +281,10 @@ const ParentSummary = () => {
           </Button>
           <Button
             variant="outline"
-            onClick={() => navigate("/history")}
+            onClick={() => navigate("/showcase")}
             className="flex-1"
           >
-            View Full History
+            View Showcase
           </Button>
         </div>
       </div>

@@ -4,13 +4,13 @@ import { SessionGuard } from "@/components/SessionGuard";
 import { DrillCard } from "@/components/DrillCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { api, SessionToday, FeedbackIn } from "@/services/api";
+import { api, SessionTodayOut, FeedbackIn } from "@/services/api";
 import { mockApi } from "@/services/mockApi";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Session = () => {
-  const [session, setSession] = useState<SessionToday | null>(null);
+  const [session, setSession] = useState<SessionTodayOut | null>(null);
   const [loading, setLoading] = useState(true);
   const [completedDrills, setCompletedDrills] = useState<Set<number>>(new Set());
   const [swapUsed, setSwapUsed] = useState(false);
@@ -38,18 +38,9 @@ const Session = () => {
       if (useMockApi) {
         const mockSession = await mockApi.getTodaySession(childId, equipment);
         setSession({
+          session_id: mockSession.session_id,
           child_id: childId,
-          drills: mockSession.drills.slice(0, 3).map(drill => ({
-            id: drill.id,
-            family_id: drill.family,
-            title: drill.title,
-            level: drill.level,
-            skill: drill.skill,
-            requirements: drill.requirements,
-            instructions: drill.instructions,
-            youtube_url: drill.youtube_url,
-            why_it_matters: drill.why_it_matters
-          }))
+          drills: mockSession.drills.slice(0, 3)
         });
       } else {
         const sessionData = await api.getSessionToday(childId, equipment);
@@ -71,12 +62,8 @@ const Session = () => {
     try {
       if (useMockApi) {
         await mockApi.submitFeedback({
-          child_id: childId,
-          drill_id: feedback.drill_id,
-          rating: feedback.attempted ? (
-            feedback.felt === 'couldnt' ? 'hard' : 
-            feedback.felt === 'tough' ? 'right' : 'easy'
-          ) : 'right'
+          ...feedback,
+          session_id: session?.session_id || 1
         });
       } else {
         await api.submitFeedback(feedback);

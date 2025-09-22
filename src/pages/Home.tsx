@@ -18,7 +18,7 @@ import {
   Settings
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { api, ParentSummary } from "@/services/api";
+import { api, ParentSummaryOut } from "@/services/api";
 import { mockApi } from "@/services/mockApi";
 import heroImage from "@/assets/hero-football-training.jpg";
 
@@ -26,7 +26,7 @@ const Home = () => {
   const [childId, setChildId] = useState(() => localStorage.getItem('childId') || '');
   const [equipment, setEquipment] = useState<"ball_only" | "ball_cones">("ball_only");
   const [useMockApi, setUseMockApi] = useState(() => localStorage.getItem('useMockApi') !== 'false');
-  const [parentSummary, setParentSummary] = useState<ParentSummary | null>(null);
+  const [parentSummary, setParentSummary] = useState<ParentSummaryOut | null>(null);
   const [sessionStatus, setSessionStatus] = useState<'none' | 'in_progress' | 'complete'>('none');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -55,13 +55,13 @@ const Home = () => {
         const mockSummary = await mockApi.getParentSummary(childId);
         setParentSummary({
           child_id: childId,
-          sessions_this_week: mockSummary.streak_days,
+          sessions_this_week: 3,
           session_dates: [],
           progress: [],
           effort_mix: {
-            couldnt: mockSummary.feedback_counts.hard,
-            tough: mockSummary.feedback_counts.right,
-            easy: mockSummary.feedback_counts.easy
+            could_not_do: mockSummary.effort_mix.could_not_do,
+            challenging: mockSummary.effort_mix.challenging,
+            easy: mockSummary.effort_mix.easy
           },
           stuck_signals: [],
           showcase: []
@@ -98,8 +98,8 @@ const Home = () => {
 
   const getTotalEffort = () => {
     if (!parentSummary) return 0;
-    return parentSummary.effort_mix.couldnt + 
-           parentSummary.effort_mix.tough + 
+    return parentSummary.effort_mix.could_not_do + 
+           parentSummary.effort_mix.challenging + 
            parentSummary.effort_mix.easy;
   };
 
