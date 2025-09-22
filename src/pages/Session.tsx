@@ -12,6 +12,7 @@ const Session = () => {
   const [session, setSession] = useState<SessionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [feedbackGiven, setFeedbackGiven] = useState<Set<number>>(new Set());
+  const [drillFeedback, setDrillFeedback] = useState<Record<number, "easy" | "right" | "hard">>({});
   const [streak, setStreak] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -29,6 +30,7 @@ const Session = () => {
       setLoading(true);
       // Reset feedback state when loading new session
       setFeedbackGiven(new Set());
+      setDrillFeedback({});
       const sessionData = await mockApi.getTodaySession(childId, equipment, ignoreRecent);
       setSession(sessionData);
     } catch (error) {
@@ -44,6 +46,22 @@ const Session = () => {
 
   const handleFeedback = async (drillId: number, rating: "easy" | "right" | "hard") => {
     try {
+      // If clicking the same rating that's already selected, unselect it
+      if (drillFeedback[drillId] === rating) {
+        // Remove from feedback and drill feedback
+        setFeedbackGiven(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(drillId);
+          return newSet;
+        });
+        setDrillFeedback(prev => {
+          const newFeedback = { ...prev };
+          delete newFeedback[drillId];
+          return newFeedback;
+        });
+        return;
+      }
+
       await mockApi.submitFeedback({
         child_id: childId,
         drill_id: drillId,
@@ -51,6 +69,7 @@ const Session = () => {
       });
 
       setFeedbackGiven(prev => new Set([...prev, drillId]));
+      setDrillFeedback(prev => ({ ...prev, [drillId]: rating }));
       setStreak(mockApi.getStreak(childId));
 
       const messages = {
@@ -116,19 +135,6 @@ const Session = () => {
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Button>
-          <div className="text-right">
-            <div className="text-xs text-muted-foreground">Debug Mode</div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                mockApi.resetDatabase();
-                loadSession(true);
-              }}
-            >
-              Reset Database
-            </Button>
-          </div>
         </div>
 
         {/* Progress Header */}
@@ -290,24 +296,30 @@ const Session = () => {
                 {/* Feedback Buttons */}
                 <div className="border-t pt-4">
                   <p className="text-sm font-medium mb-3">How did it feel?</p>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2">
                     {[
-                      { rating: "hard" as const, label: "Too Hard", variant: "outline" as const, color: "text-red-600" },
-                      { rating: "right" as const, label: "Just Right", variant: "success" as const, color: "text-green-600" },
-                      { rating: "easy" as const, label: "Too Easy", variant: "secondary" as const, color: "text-blue-600" }
-                    ].map(({ rating, label, variant, color }) => (
-                      <Button
-                        key={rating}
-                        variant={feedbackGiven.has(drill.id) ? "success" : "feedback"}
-                        size="feedback"
-                        onClick={() => handleFeedback(drill.id, rating)}
-                        disabled={feedbackGiven.has(drill.id)}
-                        className={feedbackGiven.has(drill.id) ? "" : `hover:${color.replace('text-', 'border-')}`}
-                      >
-                        {getFeedbackIcon(rating)}
-                        <span className="text-xs font-medium">{label}</span>
-                      </Button>
-                    ))}
+                      { rating: "hard" as const, label: "Too Hard", icon: "🔴" },
+                      { rating: "right" as const, label: "Good", icon: "🟡" },
+                      { rating: "easy" as const, label: "Too Easy", icon: "🟢" }
+                    ].map(({ rating, label, icon }) => {
+                      const isSelected = drillFeedback[drill.id] === rating;
+                      return (
+                        <Button
+                          key={rating}
+                          variant={isSelected ? "success" : "outline"}
+                          size="sm"
+                          onClick={() => handleFeedback(drill.id, rating)}
+                          className={`h-12 text-xs font-medium transition-all ${
+                            isSelected 
+                              ? 'bg-primary text-primary-foreground border-primary' 
+                              : 'hover:border-primary hover:bg-primary/5'
+                          }`}
+                        >
+                          <span className="text-base mr-2">{icon}</span>
+                          {label}
+                        </Button>
+                      );
+                    })}
                   </div>
                 </div>
               </CardContent>

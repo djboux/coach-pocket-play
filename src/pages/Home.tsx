@@ -221,6 +221,29 @@ const Home = () => {
             </div>
             <ChevronRight className="h-5 w-5" />
           </Button>
+
+          {/* Reset Database Button */}
+          <Button
+            variant="outline"
+            onClick={() => {
+              mockApi.resetDatabase();
+              // Refresh the data
+              if (childId) {
+                mockApi.getParentSummary(childId).then(summary => {
+                  setParentSummary(summary);
+                });
+                const history = mockApi.getSessionHistory(childId);
+                setSessionHistory(history);
+              }
+              toast({
+                title: "Database Reset",
+                description: "All training data has been cleared",
+              });
+            }}
+            className="w-full h-auto p-4 text-muted-foreground hover:text-foreground"
+          >
+            Reset Database
+          </Button>
         </div>
 
         {/* Recent Activity Preview */}
