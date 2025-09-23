@@ -196,7 +196,7 @@ export const DrillCard = ({
   const renderFeelingStep = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h3 className="text-xl font-semibold mb-2">How did it go?</h3>
+        <h3 className="text-base font-medium mb-2">How did it go?</h3>
       </div>
       
       <div className="space-y-3">
@@ -243,8 +243,13 @@ export const DrillCard = ({
             <div className="bg-gradient-to-r from-orange-500/20 to-yellow-500/20 p-4 rounded-lg border border-orange-200/50">
               <h3 className="text-xl font-semibold text-orange-700 dark:text-orange-300">Great effort — this one's tricky!</h3>
             </div>
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <p className="text-sm font-medium text-foreground">🔮 What should we do next time?</p>
+            <div className="mb-4">
+              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                  <span className="text-sm font-bold">2</span>
+                </div>
+                What should we do next time?
+              </h3>
             </div>
           </div>
           
@@ -279,8 +284,13 @@ export const DrillCard = ({
             <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 p-4 rounded-lg border border-green-200/50">
               <h3 className="text-xl font-semibold text-green-700 dark:text-green-300">Perfect practice zone 💪</h3>
             </div>
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <p className="text-sm font-medium text-foreground">🔮 What should we do next time?</p>
+            <div className="mb-4">
+              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                  <span className="text-sm font-bold">2</span>
+                </div>
+                What should we do next time?
+              </h3>
             </div>
           </div>
           
@@ -313,8 +323,13 @@ export const DrillCard = ({
             <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 p-4 rounded-lg border border-purple-200/50">
               <h3 className="text-xl font-semibold text-purple-700 dark:text-purple-300">You smashed it! 🎉</h3>
             </div>
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <p className="text-sm font-medium text-foreground">🔮 What should we do next time?</p>
+            <div className="mb-4">
+              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                  <span className="text-sm font-bold">2</span>
+                </div>
+                What should we do next time?
+              </h3>
             </div>
           </div>
           

@@ -64,21 +64,17 @@ const ParentSummary = () => {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/")}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <button
+              onClick={() => navigate('/')}
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Parent Dashboard</h1>
-              <p className="text-muted-foreground">{childId}'s weekly progress snapshot</p>
-            </div>
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <h1 className="text-3xl font-bold">Parent Dashboard</h1>
           </div>
+          <p className="text-muted-foreground ml-9">{childId}'s weekly progress snapshot</p>
         </div>
 
         {/* Key Metrics Row */}

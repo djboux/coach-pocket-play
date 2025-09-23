@@ -147,20 +147,18 @@ const Bonus = () => {
       <div className="min-h-screen bg-gradient-primary p-4">
         <div className="container mx-auto max-w-4xl">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              className="text-primary-foreground hover:bg-white/10"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Bonus Drills
-            </Button>
-            
+          <div className="mb-6">
             <div className="text-primary-foreground">
-              <h1 className="text-2xl font-bold">Bonus Mode</h1>
-              <p className="text-primary-foreground/80">Extra practice for tomorrow!</p>
+              <div className="flex items-center gap-3 mb-2">
+                <button
+                  onClick={handleBack}
+                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+                <h1 className="text-3xl font-bold">Bonus Mode</h1>
+              </div>
+              <p className="text-primary-foreground/90 ml-9">Extra practice for tomorrow!</p>
             </div>
           </div>
 

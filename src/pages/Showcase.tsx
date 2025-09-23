@@ -137,23 +137,21 @@ const Showcase = () => {
     <div className="min-h-screen bg-gradient-primary p-4">
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="text-primary-foreground hover:bg-white/10"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Home
-          </Button>
-          
+        <div className="mb-6">
           <div className="text-primary-foreground">
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <span className="text-4xl">⭐</span>
-              Your Showcase
-            </h1>
-            <p className="text-primary-foreground/80">
+            <div className="flex items-center gap-3 mb-2">
+              <button
+                onClick={() => navigate('/')}
+                className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+              <h1 className="text-3xl font-bold flex items-center gap-2">
+                <span className="text-4xl">⭐</span>
+                Your Showcase
+              </h1>
+            </div>
+            <p className="text-primary-foreground/90 ml-9">
               Skills you've mastered • {childId}'s achievements
             </p>
           </div>
