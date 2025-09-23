@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DrillRow, FeedbackIn } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
-import { ExternalLink, Play } from 'lucide-react';
+import { ExternalLink, Play, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface DrillCardProps {
   drill: DrillRow;
@@ -136,28 +136,24 @@ export const DrillCard = ({
       <div className="space-y-3">
         <Button 
           onClick={() => handleAttemptResponse(true)}
-          variant="outline"
-          className="w-full"
+          className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90"
           size="lg"
         >
           ✅ Yes, I completed it
         </Button>
         
-        <Button 
+        <button 
           onClick={() => {
             if (canSwap && onSwapDrill) {
-              // Show swap option instead of submitting immediately
               setStep('swap');
             } else {
               handleAttemptResponse(false);
             }
           }}
-          variant="outline"
-          className="w-full"
-          size="lg"
+          className="w-full text-muted-foreground hover:text-foreground transition-colors text-sm underline"
         >
-          ⏭️ Skip this drill
-        </Button>
+          Skip this drill
+        </button>
       </div>
     </div>
   );
@@ -169,22 +165,30 @@ export const DrillCard = ({
       </div>
       
       <div className="space-y-3">
-        <Button
-          onClick={onSwapDrill}
-          className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90"
-          size="lg"
-        >
-          🔄 Swap this drill
-        </Button>
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            onClick={onSwapDrill}
+            className="bg-gradient-primary text-primary-foreground hover:opacity-90"
+            size="lg"
+          >
+            🔄 Swap this drill
+          </Button>
+          
+          <Button 
+            onClick={() => setStep('attempt')}
+            className="bg-gradient-secondary text-secondary-foreground hover:opacity-90"
+            size="lg"
+          >
+            ↩️ Do the drill
+          </Button>
+        </div>
         
-        <Button 
+        <button 
           onClick={() => handleAttemptResponse(false)}
-          variant="outline"
-          className="w-full"
-          size="lg"
+          className="w-full text-muted-foreground hover:text-foreground transition-colors text-sm underline"
         >
-          Continue without swapping
-        </Button>
+          Skip without swapping
+        </button>
       </div>
     </div>
   );
@@ -208,7 +212,8 @@ export const DrillCard = ({
         
         <Button 
           onClick={() => handleFeelingResponse('challenging')}
-          className="w-full text-left justify-start bg-gradient-primary text-primary-foreground hover:opacity-90"
+          variant="outline"
+          className="w-full text-left justify-start"
           size="lg"
         >
           <span className="text-2xl mr-3">💪</span>
@@ -234,9 +239,10 @@ export const DrillCard = ({
     if (feeling === 'could_not_do') {
       return (
         <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-xl font-semibold mb-2 text-warning">Great effort — this one's tricky!</h3>
-            <p className="text-sm text-muted-foreground">We'll get there with practice.</p>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-semibold text-warning">Great effort — this one's tricky!</h3>
+            <p className="text-sm text-muted-foreground">What should we do next time?</p>
+            <div className="w-12 h-0.5 bg-gradient-primary mx-auto rounded-full"></div>
           </div>
           
           <div className="space-y-3">
@@ -250,15 +256,13 @@ export const DrillCard = ({
             </Button>
             
             {drill.level > 1 && (
-              <Button 
+              <button 
                 onClick={() => handleNextChoice('make_easier')}
-                variant="outline"
-                className="w-full"
-                size="lg"
+                className="w-full text-muted-foreground hover:text-foreground transition-colors text-sm underline"
                 disabled={isSubmitting}
               >
-                ⬇️ Make it easier
-              </Button>
+                ⬇️ Make it easier next time
+              </button>
             )}
           </div>
         </div>
@@ -268,9 +272,10 @@ export const DrillCard = ({
     if (feeling === 'challenging') {
       return (
         <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-xl font-semibold mb-2 text-success">Perfect practice zone 💪</h3>
-            <p className="text-sm text-muted-foreground">Lock it in; you'll level up soon.</p>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-semibold text-success">Perfect practice zone 💪</h3>
+            <p className="text-sm text-muted-foreground">What should we do next time?</p>
+            <div className="w-12 h-0.5 bg-gradient-primary mx-auto rounded-full"></div>
           </div>
           
           <div className="space-y-3">
@@ -283,15 +288,13 @@ export const DrillCard = ({
               🎯 Same again
             </Button>
             
-            <Button 
+            <button 
               onClick={() => handleNextChoice('tiny_challenge')}
-              variant="outline"
-              className="w-full"
-              size="lg"
+              className="w-full text-muted-foreground hover:text-foreground transition-colors text-sm underline"
               disabled={isSubmitting}
             >
-              ⚡ Tiny challenge (+5s / +3 reps)
-            </Button>
+              ⚡ Tiny challenge (+5s / +3 reps) next time
+            </button>
           </div>
         </div>
       );
@@ -300,8 +303,10 @@ export const DrillCard = ({
     if (feeling === 'easy') {
       return (
         <div className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-xl font-semibold mb-2 text-secondary">You smashed it! 🎉</h3>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-semibold text-secondary">You smashed it! 🎉</h3>
+            <p className="text-sm text-muted-foreground">What should we do next time?</p>
+            <div className="w-12 h-0.5 bg-gradient-secondary mx-auto rounded-full"></div>
           </div>
           
           <div className="space-y-3">
@@ -314,15 +319,13 @@ export const DrillCard = ({
               ⬆️ Level up now + added to your Showcase ⭐
             </Button>
             
-            <Button 
+            <button 
               onClick={() => handleNextChoice('repeat_for_fun')}
-              variant="outline"
-              className="w-full"
-              size="lg"
+              className="w-full text-muted-foreground hover:text-foreground transition-colors text-sm underline"
               disabled={isSubmitting}
             >
-              🔄 Repeat for fun
-            </Button>
+              🔄 Repeat for fun next time
+            </button>
           </div>
         </div>
       );
@@ -357,14 +360,14 @@ export const DrillCard = ({
             
             <div className="space-y-2 flex-1">
               <div className="flex items-center gap-2">
-                <CardTitle className="text-xl cursor-pointer" onClick={onToggleExpanded}>
+                <CardTitle className="text-xl cursor-pointer flex items-center gap-2" onClick={onToggleExpanded}>
                   {drill.title}
+                  {isExpanded ? (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  )}
                 </CardTitle>
-                {!isExpanded && (
-                  <Button variant="ghost" size="sm" onClick={onToggleExpanded}>
-                    Expand
-                  </Button>
-                )}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className={getSkillColor(drill.skill)}>
