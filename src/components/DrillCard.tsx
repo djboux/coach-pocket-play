@@ -257,7 +257,7 @@ export const DrillCard = ({
               size="lg"
               disabled={isSubmitting}
             >
-              🔄 Keep practicing
+              🔄 Keep practising
             </Button>
             
             {drill.level > 1 && (
