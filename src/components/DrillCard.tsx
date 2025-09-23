@@ -196,7 +196,7 @@ export const DrillCard = ({
   const renderFeelingStep = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h3 className="text-base font-medium mb-2">How did it go?</h3>
+        <h3 className="text-xl font-semibold mb-2">How did it go?</h3>
       </div>
       
       <div className="space-y-3">
@@ -244,10 +244,7 @@ export const DrillCard = ({
               <h3 className="text-xl font-semibold text-orange-700 dark:text-orange-300">Great effort — this one's tricky!</h3>
             </div>
             <div className="mb-4">
-              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                  <span className="text-sm font-bold">2</span>
-                </div>
+              <h3 className="font-semibold text-xl mb-3">
                 What should we do next time?
               </h3>
             </div>
@@ -285,10 +282,7 @@ export const DrillCard = ({
               <h3 className="text-xl font-semibold text-green-700 dark:text-green-300">Perfect practice zone 💪</h3>
             </div>
             <div className="mb-4">
-              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                  <span className="text-sm font-bold">2</span>
-                </div>
+              <h3 className="font-semibold text-xl mb-3">
                 What should we do next time?
               </h3>
             </div>
@@ -324,10 +318,7 @@ export const DrillCard = ({
               <h3 className="text-xl font-semibold text-purple-700 dark:text-purple-300">You smashed it! 🎉</h3>
             </div>
             <div className="mb-4">
-              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                  <span className="text-sm font-bold">2</span>
-                </div>
+              <h3 className="font-semibold text-xl mb-3">
                 What should we do next time?
               </h3>
             </div>
