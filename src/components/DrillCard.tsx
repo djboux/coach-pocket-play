@@ -14,9 +14,13 @@ interface DrillCardProps {
   onNext: () => void;
   canSwap?: boolean;
   onSwapDrill?: () => void;
+  drillNumber?: number;
+  isExpanded?: boolean;
+  isCompleted?: boolean;
+  onToggleExpanded?: () => void;
 }
 
-type Step = 'attempt' | 'feeling' | 'choice' | 'complete';
+type Step = 'attempt' | 'feeling' | 'choice' | 'complete' | 'swap';
 type Feeling = 'could_not_do' | 'challenging' | 'easy';
 type NextChoice = 'repeat_same' | 'make_easier' | 'tiny_challenge' | 'level_up' | 'repeat_for_fun' | 'add_to_showcase';
 
@@ -27,7 +31,11 @@ export const DrillCard = ({
   onFeedbackSubmit, 
   onNext,
   canSwap = false,
-  onSwapDrill
+  onSwapDrill,
+  drillNumber,
+  isExpanded = true,
+  isCompleted = false,
+  onToggleExpanded
 }: DrillCardProps) => {
   const [step, setStep] = useState<Step>('attempt');
   const [attempted, setAttempted] = useState<boolean | null>(null);
@@ -82,7 +90,7 @@ export const DrillCard = ({
     try {
       await onFeedbackSubmit(feedback);
       
-      // Show success toast based on choice
+      // Show success toast only for level up
       if (choice === 'level_up') {
         toast({
           title: `Level ${drill.level + 1} and in your Showcase! 🌟`,
@@ -122,16 +130,51 @@ export const DrillCard = ({
   const renderAttemptStep = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h3 className="text-xl font-semibold mb-2">Did you try it?</h3>
+        <h3 className="text-xl font-semibold mb-2">Completed?</h3>
       </div>
       
       <div className="space-y-3">
         <Button 
           onClick={() => handleAttemptResponse(true)}
+          variant="outline"
+          className="w-full"
+          size="lg"
+        >
+          ✅ Yes, I completed it
+        </Button>
+        
+        <Button 
+          onClick={() => {
+            if (canSwap && onSwapDrill) {
+              // Show swap option instead of submitting immediately
+              setStep('swap');
+            } else {
+              handleAttemptResponse(false);
+            }
+          }}
+          variant="outline"
+          className="w-full"
+          size="lg"
+        >
+          ⏭️ Skip this drill
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderSwapStep = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h3 className="text-xl font-semibold mb-2">Do you want to swap this drill?</h3>
+      </div>
+      
+      <div className="space-y-3">
+        <Button
+          onClick={onSwapDrill}
           className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90"
           size="lg"
         >
-          ✅ Yes
+          🔄 Swap this drill
         </Button>
         
         <Button 
@@ -140,24 +183,9 @@ export const DrillCard = ({
           className="w-full"
           size="lg"
         >
-          ⏭️ Skip
+          Continue without swapping
         </Button>
       </div>
-
-      {canSwap && onSwapDrill && (
-        <div className="text-center pt-4 border-t">
-          <p className="text-sm text-muted-foreground mb-2">
-            Skipped. Want to swap this drill?
-          </p>
-          <Button
-            onClick={onSwapDrill}
-            variant="ghost"
-            size="sm"
-          >
-            🔄 Swap this drill
-          </Button>
-        </div>
-      )}
     </div>
   );
 
@@ -306,66 +334,100 @@ export const DrillCard = ({
   const renderCompleteStep = () => (
     <div className="text-center space-y-4">
       <div className="text-4xl">✅</div>
-      <h3 className="text-xl font-semibold text-success">Great job!</h3>
+      <h3 className="text-xl font-semibold text-success">Feedback captured!</h3>
       <p className="text-muted-foreground">Moving to the next drill...</p>
     </div>
   );
 
   return (
-    <Card className="w-full max-w-2xl mx-auto shadow-glow">
+    <Card className={`w-full max-w-2xl mx-auto shadow-glow transition-all duration-300 ${
+      !isExpanded ? 'opacity-60' : ''
+    }`}>
       <CardHeader className="space-y-4">
         <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <CardTitle className="text-xl">{drill.title}</CardTitle>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge className={getSkillColor(drill.skill)}>
-                {drill.skill}
-              </Badge>
-              <Badge variant="outline">
-                Level {drill.level}
-              </Badge>
-              {mode === 'bonus' && (
-                <Badge className="bg-gradient-secondary text-secondary-foreground">
-                  Bonus
+          <div className="flex items-center gap-3">
+            {/* Drill Number */}
+            {drillNumber && (
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                isCompleted ? 'bg-success text-success-foreground' : 'bg-primary/10 text-primary'
+              }`}>
+                {drillNumber}
+              </div>
+            )}
+            
+            <div className="space-y-2 flex-1">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-xl cursor-pointer" onClick={onToggleExpanded}>
+                  {drill.title}
+                </CardTitle>
+                {!isExpanded && (
+                  <Button variant="ghost" size="sm" onClick={onToggleExpanded}>
+                    Expand
+                  </Button>
+                )}
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className={getSkillColor(drill.skill)}>
+                  {drill.skill}
                 </Badge>
-              )}
+                <Badge variant="outline">
+                  Level {drill.level}
+                </Badge>
+                {mode === 'bonus' && (
+                  <Badge className="bg-gradient-secondary text-secondary-foreground">
+                    Bonus
+                  </Badge>
+                )}
+                {isCompleted && (
+                  <Badge className="bg-success text-success-foreground">
+                    ✓ Complete
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {drill.why_it_matters && (
-          <div className="bg-muted/50 p-3 rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              <strong>Why it matters:</strong> {drill.why_it_matters}
-            </p>
-          </div>
-        )}
+        {isExpanded && (
+          <>
+            {drill.why_it_matters && (
+              <div className="bg-muted/50 p-3 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Why it matters:</strong> {drill.why_it_matters}
+                </p>
+              </div>
+            )}
 
-        <div className="space-y-3">
-          <h4 className="font-medium">Instructions:</h4>
-          <p className="text-muted-foreground">{drill.instructions}</p>
-        </div>
+            <div className="space-y-3">
+              <h4 className="font-medium">Instructions:</h4>
+              <p className="text-muted-foreground">{drill.instructions}</p>
+            </div>
 
-        {drill.youtube_url && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-fit"
-            onClick={() => window.open(drill.youtube_url, '_blank')}
-          >
-            <Play className="w-4 h-4 mr-2" />
-            Watch Video
-            <ExternalLink className="w-3 h-3 ml-2" />
-          </Button>
+            {drill.youtube_url && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-fit"
+                onClick={() => window.open(drill.youtube_url, '_blank')}
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Watch Video
+                <ExternalLink className="w-3 h-3 ml-2" />
+              </Button>
+            )}
+          </>
         )}
       </CardHeader>
 
-      <CardContent className="space-y-6">
-        {step === 'attempt' && renderAttemptStep()}
-        {step === 'feeling' && renderFeelingStep()}
-        {step === 'choice' && renderChoiceStep()}
-        {step === 'complete' && renderCompleteStep()}
-      </CardContent>
+      {isExpanded && !isCompleted && (
+        <CardContent className="space-y-6">
+          {step === 'attempt' && renderAttemptStep()}
+          {step === 'swap' && renderSwapStep()}
+          {step === 'feeling' && renderFeelingStep()}
+          {step === 'choice' && renderChoiceStep()}
+          {step === 'complete' && renderCompleteStep()}
+        </CardContent>
+      )}
     </Card>
   );
 };

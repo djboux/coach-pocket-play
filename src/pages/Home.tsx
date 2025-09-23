@@ -156,28 +156,6 @@ const Home = () => {
               />
             </div>
 
-            {/* API Mode Toggle */}
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                API Mode
-              </Label>
-              <div className="flex items-center space-x-3 p-3 rounded-lg border-2 border-border">
-                <Switch
-                  id="api-mode"
-                  checked={useMockApi}
-                  onCheckedChange={setUseMockApi}
-                />
-                <Label htmlFor="api-mode" className="flex-1 cursor-pointer">
-                  <div className="font-medium">
-                    {useMockApi ? "Mock API (Demo)" : "Real API"}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {useMockApi ? "Use demo data for testing" : "Connect to your backend"}
-                  </div>
-                </Label>
-              </div>
-            </div>
 
             {/* Equipment Selection */}
             <div className="space-y-3">
@@ -225,21 +203,6 @@ const Home = () => {
         <div className="max-w-md mx-auto space-y-3">
           <Button
             variant="drill"
-            onClick={() => navigate("/bonus")}
-            className="w-full justify-between text-left h-auto p-4"
-          >
-            <div className="flex items-center gap-3">
-              <Star className="h-5 w-5" />
-              <div>
-                <div className="font-semibold">Bonus Drills</div>
-                <div className="text-sm opacity-75">Extra practice when ready</div>
-              </div>
-            </div>
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-
-          <Button
-            variant="drill"
             onClick={() => navigate("/showcase")}
             className="w-full justify-between text-left h-auto p-4"
           >
@@ -282,25 +245,53 @@ const Home = () => {
             </div>
             <ChevronRight className="h-5 w-5" />
           </Button>
-
-          {/* Reset Button - only show in mock mode */}
-          {useMockApi && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                mockApi.resetDatabase();
-                loadDashboardData();
-                toast({
-                  title: "Database Reset",
-                  description: "All training data has been cleared",
-                });
-              }}
-              className="w-full h-auto p-4 text-muted-foreground hover:text-foreground"
-            >
-              Reset Database
-            </Button>
-          )}
         </div>
+
+        {/* Debug Section - only show in mock mode */}
+        {useMockApi && (
+          <Card className="max-w-md mx-auto border-0 bg-black/20 backdrop-blur-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg text-white flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Debug Mode
+              </CardTitle>
+              <CardDescription className="text-white/70">
+                Development tools and data management
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-3">
+              {/* API Mode Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-white/10">
+                <div className="text-white">
+                  <div className="font-medium">API Mode</div>
+                  <div className="text-xs text-white/70">
+                    {useMockApi ? "Using demo data" : "Using real backend"}
+                  </div>
+                </div>
+                <Switch
+                  checked={useMockApi}
+                  onCheckedChange={setUseMockApi}
+                />
+              </div>
+
+              {/* Reset Database */}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  mockApi.resetDatabase();
+                  loadDashboardData();
+                  toast({
+                    title: "Database Reset",
+                    description: "All training data has been cleared",
+                  });
+                }}
+                className="w-full bg-white/5 text-white border-white/20 hover:bg-white/10"
+              >
+                Reset Database
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Stats */}
         {parentSummary && (

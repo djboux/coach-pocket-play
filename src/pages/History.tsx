@@ -13,6 +13,9 @@ interface SessionHistory {
     rating: "easy" | "right" | "hard";
     level?: number;
     instructions?: string;
+    attempted?: boolean;
+    next_action?: string;
+    session_mode?: "core" | "bonus";
   }>;
 }
 
@@ -154,27 +157,41 @@ const History = () => {
                   <div className="space-y-3">
                     {session.drills.map((drill, drillIndex) => (
                       <div key={drillIndex} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          {getRatingIcon(drill.rating)}
-                          <div>
-                            <span className="font-medium block">{drill.title}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {drill.instructions?.substring(0, 50) || 'No description'}...
-                            </span>
+                      <div className="flex items-center gap-3">
+                        {getRatingIcon(drill.rating)}
+                        <div>
+                          <span className="font-medium block">{drill.title}</span>
+                          {/* Show attempted status */}
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                            <span>Attempted: {drill.attempted ? 'Yes' : 'No'}</span>
+                            {drill.session_mode === 'bonus' && (
+                              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">
+                                Bonus
+                              </Badge>
+                            )}
                           </div>
+                          <span className="text-xs text-muted-foreground">
+                            {drill.instructions?.substring(0, 50) || 'No description'}...
+                          </span>
                         </div>
+                      </div>
                         <div className="flex flex-col items-end gap-1">
-                          <div className="flex flex-col items-end gap-1">
-                            <Badge 
-                              variant="secondary"
-                              className={getRatingBadge(drill.rating)}
-                            >
-                              {drill.rating === "right" ? "Good" : drill.rating}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              Level {drill.level || 1}
+                        <div className="flex flex-col items-end gap-1">
+                          <Badge 
+                            variant="secondary"
+                            className={getRatingBadge(drill.rating)}
+                          >
+                            {drill.rating === "right" ? "Good" : drill.rating}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            Level {drill.level || 1}
+                          </span>
+                          {drill.next_action && (
+                            <span className="text-xs text-muted-foreground capitalize">
+                              {drill.next_action.replace('_', ' ')}
                             </span>
-                          </div>
+                          )}
+                        </div>
                         </div>
                       </div>
                     ))}

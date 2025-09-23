@@ -452,7 +452,10 @@ export const mockApi = {
             title: drill?.title || "Unknown Drill",
             rating,
             level: drill?.level || 1,
-            instructions: drill?.instructions || ""
+            instructions: drill?.instructions || "",
+            attempted: f.attempted,
+            next_action: f.next_action,
+            session_mode: f.session_mode
           };
         });
         
@@ -468,24 +471,25 @@ export const mockApi = {
       {
         date: new Date().toISOString(),
         drills: [
-          { title: "Toe Taps", rating: "right" as const, level: 2, instructions: "Alternate taps with both feet. Goal: 30 in 30s." },
-          { title: "Figure-8 Dribble", rating: "easy" as const, level: 1, instructions: "Dribble in a figure-8 around two objects (use shoes). 3 laps." },
-          { title: "Wall Passes", rating: "right" as const, level: 3, instructions: "40 alternating-foot passes." }
+          { title: "Toe Taps", rating: "right" as const, level: 2, instructions: "Alternate taps with both feet. Goal: 30 in 30s.", attempted: true, next_action: "repeat_same", session_mode: "core" as const },
+          { title: "Figure-8 Dribble", rating: "easy" as const, level: 1, instructions: "Dribble in a figure-8 around two objects (use shoes). 3 laps.", attempted: true, next_action: "level_up", session_mode: "core" as const },
+          { title: "Wall Passes", rating: "right" as const, level: 3, instructions: "40 alternating-foot passes.", attempted: true, next_action: "tiny_challenge", session_mode: "core" as const }
         ]
       },
       {
         date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         drills: [
-          { title: "Cone Slalom", rating: "hard" as const, level: 2, instructions: "Slalom down and back twice in 30s." },
-          { title: "Juggling Practice", rating: "right" as const, level: 1, instructions: "Keep the ball up using feet only. Goal: 5 touches." },
-          { title: "Inside–Outside Touches", rating: "right" as const, level: 2, instructions: "30 cycles at faster pace." }
+          { title: "Cone Slalom", rating: "hard" as const, level: 2, instructions: "Slalom down and back twice in 30s.", attempted: false, next_action: null, session_mode: "core" as const },
+          { title: "Juggling Practice", rating: "right" as const, level: 1, instructions: "Keep the ball up using feet only. Goal: 5 touches.", attempted: true, next_action: "repeat_same", session_mode: "core" as const },
+          { title: "Inside–Outside Touches", rating: "right" as const, level: 2, instructions: "30 cycles at faster pace.", attempted: true, next_action: "repeat_same", session_mode: "core" as const },
+          { title: "Advanced Juggling", rating: "easy" as const, level: 3, instructions: "Keep the ball up for 10+ touches.", attempted: true, next_action: "add_to_showcase", session_mode: "bonus" as const }
         ]
       },
       {
         date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         drills: [
-          { title: "Step Over Practice", rating: "easy" as const, level: 1, instructions: "Step over the ball with each foot. 10 each side." },
-          { title: "Wall Passes", rating: "right" as const, level: 1, instructions: "20 passes with right foot against a wall." }
+          { title: "Step Over Practice", rating: "easy" as const, level: 1, instructions: "Step over the ball with each foot. 10 each side.", attempted: true, next_action: "level_up", session_mode: "core" as const },
+          { title: "Wall Passes", rating: "right" as const, level: 1, instructions: "20 passes with right foot against a wall.", attempted: true, next_action: "repeat_same", session_mode: "core" as const }
         ]
       }
     ];

@@ -8,12 +8,14 @@ import { api, SessionTodayOut, FeedbackIn } from "@/services/api";
 import { mockApi } from "@/services/mockApi";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import heroImage from "@/assets/hero-football-training.jpg";
 
 const Session = () => {
   const [session, setSession] = useState<SessionTodayOut | null>(null);
   const [loading, setLoading] = useState(true);
   const [completedDrills, setCompletedDrills] = useState<Set<number>>(new Set());
   const [swapUsed, setSwapUsed] = useState(false);
+  const [expandedDrill, setExpandedDrill] = useState<number>(0); // First drill expanded by default
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -70,6 +72,12 @@ const Session = () => {
       }
 
       setCompletedDrills(prev => new Set([...prev, feedback.drill_id]));
+
+      // Auto-expand next drill
+      const currentIndex = session?.drills.findIndex(d => d.id === feedback.drill_id) || 0;
+      if (currentIndex < 2) {
+        setExpandedDrill(currentIndex + 1);
+      }
 
       // Check if session is complete
       if (completedDrills.size + 1 >= 3) {
@@ -128,8 +136,14 @@ const Session = () => {
 
   if (!childId) {
     return (
-      <div className="min-h-screen bg-gradient-primary p-4 flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
+    <div className="min-h-screen relative overflow-hidden p-4 flex items-center justify-center">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-hero/90"></div>
+        </div>
+        <Card className="max-w-md mx-auto relative z-10">
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-bold mb-4">Please Set Your Name</h2>
             <p className="text-muted-foreground mb-4">
@@ -144,11 +158,17 @@ const Session = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-primary p-4 flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
+      <div className="min-h-screen relative overflow-hidden p-4 flex items-center justify-center">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-hero/90"></div>
+        </div>
+        <Card className="max-w-md mx-auto relative z-10">
           <CardContent className="p-8 text-center">
-            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading your training session...</p>
+            <div className="animate-spin w-8 h-8 border-4 border-white border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-white">Loading your training session...</p>
           </CardContent>
         </Card>
       </div>
@@ -156,23 +176,31 @@ const Session = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-primary p-4">
-      <div className="container mx-auto max-w-4xl">
+    <div className="min-h-screen relative overflow-hidden p-4">
+      {/* Use same background as homepage */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroImage})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-hero/90"></div>
+      </div>
+      
+      <div className="container mx-auto max-w-4xl relative z-10">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/')}
-            className="text-primary-foreground hover:bg-white/10"
+            className="text-white hover:bg-white/10"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Home
           </Button>
           
-          <div className="text-primary-foreground">
+          <div className="text-white">
             <h1 className="text-2xl font-bold">Today's Training</h1>
-            <p className="text-primary-foreground/80">
+            <p className="text-white/80">
               {childId} • {equipment === "ball_only" ? "Ball Only" : "Ball + Markers"}
             </p>
           </div>
@@ -194,6 +222,10 @@ const Session = () => {
                   drill={drill}
                   childId={childId}
                   mode="core"
+                  drillNumber={index + 1}
+                  isExpanded={expandedDrill === index}
+                  isCompleted={completedDrills.has(drill.id)}
+                  onToggleExpanded={() => setExpandedDrill(expandedDrill === index ? -1 : index)}
                   onFeedbackSubmit={handleDrillComplete}
                   onNext={() => {}}
                   canSwap={!swapUsed && !completedDrills.has(drill.id)}
