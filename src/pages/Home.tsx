@@ -247,9 +247,8 @@ const Home = () => {
           </Button>
         </div>
 
-        {/* Debug Section - only show in mock mode */}
-        {useMockApi && (
-          <Card className="max-w-md mx-auto border-0 bg-black/20 backdrop-blur-sm">
+        {/* Debug Section */}
+        <Card className="max-w-md mx-auto border-0 bg-black/20 backdrop-blur-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg text-white flex items-center gap-2">
                 <Settings className="h-5 w-5" />
@@ -291,7 +290,6 @@ const Home = () => {
               </Button>
             </CardContent>
           </Card>
-        )}
 
         {/* Quick Stats */}
         {parentSummary && (

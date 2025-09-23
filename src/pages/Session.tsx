@@ -187,30 +187,34 @@ const Session = () => {
       
       <div className="container mx-auto max-w-4xl relative z-10">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="space-y-4 mb-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/')}
-            className="text-white hover:bg-white/10"
+            className="text-white hover:bg-white/10 self-start"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Home
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Back
           </Button>
           
           <div className="text-white">
-            <h1 className="text-2xl font-bold">Today's Training</h1>
-            <p className="text-white/80">
-              {new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </p>
-            <p className="text-white/80">
-              {childId} • {equipment === "ball_only" ? "Ball Only" : "Ball + Markers"}
-            </p>
+            <h1 className="text-3xl font-bold mb-2">Today's Training</h1>
+            <div className="space-y-1 text-white/90">
+              <p className="text-lg">
+                {new Date().toLocaleDateString('en-US', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </p>
+              <p className="flex items-center gap-2">
+                <span className="font-medium">{childId}</span>
+                <span>•</span>
+                <span>{equipment === "ball_only" ? "Ball Only" : "Ball + Markers"}</span>
+              </p>
+            </div>
           </div>
         </div>
 

@@ -139,7 +139,7 @@ export const DrillCard = ({
           className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90"
           size="lg"
         >
-          ✅ Yes, I completed it
+          ✅ Yes, completed it
         </Button>
         
         <button 
@@ -171,7 +171,7 @@ export const DrillCard = ({
             className="bg-gradient-primary text-primary-foreground hover:opacity-90"
             size="lg"
           >
-            🔄 Swap this drill
+            🔄 Swap drill
           </Button>
           
           <Button 
@@ -179,7 +179,7 @@ export const DrillCard = ({
             className="bg-gradient-secondary text-secondary-foreground hover:opacity-90"
             size="lg"
           >
-            ↩️ Do the drill
+            ↩️ Do drill
           </Button>
         </div>
         
@@ -293,7 +293,7 @@ export const DrillCard = ({
               className="w-full text-muted-foreground hover:text-foreground transition-colors text-sm underline"
               disabled={isSubmitting}
             >
-              ⚡ Tiny challenge (+5s / +3 reps) next time
+              ⚡ Tiny challenge next time
             </button>
           </div>
         </div>
@@ -316,7 +316,7 @@ export const DrillCard = ({
               size="lg"
               disabled={isSubmitting}
             >
-              ⬆️ Level up now + added to your Showcase ⭐
+              ⬆️ Level up + Showcase ⭐
             </Button>
             
             <button 

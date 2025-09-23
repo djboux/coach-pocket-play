@@ -10,11 +10,14 @@ interface SessionHistory {
   date: string;
   drills: Array<{
     title: string;
-    rating: "easy" | "right" | "hard";
+    difficulty_rating?: "too_easy" | "just_right" | "too_hard";
+    effort_rating?: "could_not_do" | "challenging" | "easy";
+    rating?: "easy" | "right" | "hard"; // Keep for backward compatibility
+    next_action?: string; // Made flexible for backward compatibility
     level?: number;
     instructions?: string;
     attempted?: boolean;
-    next_action?: string;
+    skipped?: boolean;
     session_mode?: "core" | "bonus";
   }>;
 }
@@ -49,27 +52,48 @@ const History = () => {
     }
   };
 
-  const getRatingIcon = (rating: string) => {
-    switch (rating) {
+  const getRatingIcon = (drill: any) => {
+    if (drill.skipped) {
+      return <AlertCircle className="h-4 w-4 text-orange-500" />;
+    }
+    if (!drill.attempted) {
+      return <div className="h-4 w-4 rounded border-2 border-gray-300" />;
+    }
+    
+    switch (drill.difficulty_rating || drill.effort_rating) {
+      case "too_easy":
       case "easy":
         return <CheckCircle className="h-4 w-4 text-blue-500" />;
-      case "right":
+      case "just_right":
+      case "challenging":
         return <Target className="h-4 w-4 text-green-500" />;
-      case "hard":
+      case "too_hard":
+      case "could_not_do":
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
         return <div className="h-4 w-4" />;
     }
   };
 
-  const getRatingBadge = (rating: string) => {
+  const getRatingBadge = (drill: any) => {
+    if (drill.skipped) {
+      return { variant: "bg-orange-100 text-orange-800 border-orange-200", text: "Skipped" };
+    }
+    if (!drill.attempted) {
+      return { variant: "bg-gray-100 text-gray-800 border-gray-200", text: "Not Attempted" };
+    }
+
+    const rating = drill.difficulty_rating || drill.effort_rating;
     const variants = {
-      easy: "bg-blue-100 text-blue-800 border-blue-200",
-      right: "bg-green-100 text-green-800 border-green-200",
-      hard: "bg-red-100 text-red-800 border-red-200"
+      too_easy: { variant: "bg-blue-100 text-blue-800 border-blue-200", text: "Too Easy" },
+      easy: { variant: "bg-blue-100 text-blue-800 border-blue-200", text: "Easy" },
+      just_right: { variant: "bg-green-100 text-green-800 border-green-200", text: "Just Right" },
+      challenging: { variant: "bg-green-100 text-green-800 border-green-200", text: "Challenging" },
+      too_hard: { variant: "bg-red-100 text-red-800 border-red-200", text: "Too Hard" },
+      could_not_do: { variant: "bg-red-100 text-red-800 border-red-200", text: "Could Not Do" }
     };
     
-    return variants[rating as keyof typeof variants] || "bg-gray-100 text-gray-800";
+    return variants[rating as keyof typeof variants] || { variant: "bg-gray-100 text-gray-800", text: "Unknown" };
   };
 
   const formatDate = (dateString: string) => {
@@ -155,46 +179,47 @@ const History = () => {
                 
                 <CardContent>
                   <div className="space-y-3">
-                    {session.drills.map((drill, drillIndex) => (
-                      <div key={drillIndex} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        {getRatingIcon(drill.rating)}
-                        <div>
-                          <span className="font-medium block">{drill.title}</span>
-                          {/* Show attempted status */}
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                            <span>Attempted: {drill.attempted ? 'Yes' : 'No'}</span>
-                            {drill.session_mode === 'bonus' && (
-                              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">
-                                Bonus
-                              </Badge>
+                    {session.drills.map((drill, drillIndex) => {
+                      const badgeInfo = getRatingBadge(drill);
+                      return (
+                        <div key={drillIndex} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            {getRatingIcon(drill)}
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{drill.title}</span>
+                                {drill.session_mode === 'bonus' && (
+                                  <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">
+                                    Bonus
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                <span>Level {drill.level || 1}</span>
+                                {drill.instructions && (
+                                  <span className="ml-2">
+                                    {drill.instructions.substring(0, 50)}...
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <Badge 
+                              variant="secondary"
+                              className={badgeInfo.variant}
+                            >
+                              {badgeInfo.text}
+                            </Badge>
+                            {drill.next_action && (
+                              <span className="text-xs text-muted-foreground capitalize">
+                                Next: {drill.next_action.replace('_', ' ')}
+                              </span>
                             )}
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {drill.instructions?.substring(0, 50) || 'No description'}...
-                          </span>
                         </div>
-                      </div>
-                        <div className="flex flex-col items-end gap-1">
-                        <div className="flex flex-col items-end gap-1">
-                          <Badge 
-                            variant="secondary"
-                            className={getRatingBadge(drill.rating)}
-                          >
-                            {drill.rating === "right" ? "Good" : drill.rating}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            Level {drill.level || 1}
-                          </span>
-                          {drill.next_action && (
-                            <span className="text-xs text-muted-foreground capitalize">
-                              {drill.next_action.replace('_', ' ')}
-                            </span>
-                          )}
-                        </div>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Session Summary */}
@@ -202,15 +227,19 @@ const History = () => {
                     <div className="flex gap-4">
                       <span className="flex items-center gap-1">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        {session.drills.filter(d => d.rating === "right").length} Good
+                        {session.drills.filter(d => d.difficulty_rating === "just_right" || d.effort_rating === "challenging").length} Just Right
                       </span>
                       <span className="flex items-center gap-1">
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        {session.drills.filter(d => d.rating === "easy").length} Too easy
+                        {session.drills.filter(d => d.difficulty_rating === "too_easy" || d.effort_rating === "easy").length} Too Easy
                       </span>
                       <span className="flex items-center gap-1">
                         <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                        {session.drills.filter(d => d.rating === "hard").length} Too hard
+                        {session.drills.filter(d => d.difficulty_rating === "too_hard" || d.effort_rating === "could_not_do").length} Too Hard
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        {session.drills.filter(d => d.skipped).length} Skipped
                       </span>
                     </div>
                   </div>
