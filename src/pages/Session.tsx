@@ -187,19 +187,17 @@ const Session = () => {
       
       <div className="container mx-auto max-w-4xl relative z-10">
         {/* Header */}
-        <div className="space-y-4 mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="text-white hover:bg-white/10 self-start"
-          >
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back
-          </Button>
-          
+        <div className="mb-6">
           <div className="text-white">
-            <h1 className="text-3xl font-bold mb-2">Today's Training</h1>
+            <div className="flex items-center gap-3 mb-2">
+              <button
+                onClick={() => navigate('/')}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+              <h1 className="text-3xl font-bold">Today's Training</h1>
+            </div>
             <div className="space-y-1 text-white/90">
               <p className="text-lg">
                 {new Date().toLocaleDateString('en-US', { 

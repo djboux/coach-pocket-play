@@ -203,11 +203,11 @@ export const DrillCard = ({
         <Button 
           onClick={() => handleFeelingResponse('could_not_do')}
           variant="outline"
-          className="w-full text-left justify-start"
+          className="w-full text-left justify-start border-destructive/50 hover:bg-destructive/10"
           size="lg"
         >
           <span className="text-2xl mr-3">😣</span>
-          <span>Couldn't do it yet</span>
+          <span className="text-destructive">Couldn't do it yet</span>
         </Button>
         
         <Button 
@@ -239,10 +239,13 @@ export const DrillCard = ({
     if (feeling === 'could_not_do') {
       return (
         <div className="space-y-6">
-          <div className="text-center space-y-2">
-            <h3 className="text-xl font-semibold text-warning">Great effort — this one's tricky!</h3>
-            <p className="text-sm text-muted-foreground">What should we do next time?</p>
-            <div className="w-12 h-0.5 bg-gradient-primary mx-auto rounded-full"></div>
+          <div className="text-center space-y-3">
+            <div className="bg-gradient-to-r from-orange-500/20 to-yellow-500/20 p-4 rounded-lg border border-orange-200/50">
+              <h3 className="text-xl font-semibold text-orange-700 dark:text-orange-300">Great effort — this one's tricky!</h3>
+            </div>
+            <div className="bg-muted/50 p-3 rounded-lg">
+              <p className="text-sm font-medium text-foreground">🔮 What should we do next time?</p>
+            </div>
           </div>
           
           <div className="space-y-3">
@@ -272,10 +275,13 @@ export const DrillCard = ({
     if (feeling === 'challenging') {
       return (
         <div className="space-y-6">
-          <div className="text-center space-y-2">
-            <h3 className="text-xl font-semibold text-success">Perfect practice zone 💪</h3>
-            <p className="text-sm text-muted-foreground">What should we do next time?</p>
-            <div className="w-12 h-0.5 bg-gradient-primary mx-auto rounded-full"></div>
+          <div className="text-center space-y-3">
+            <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 p-4 rounded-lg border border-green-200/50">
+              <h3 className="text-xl font-semibold text-green-700 dark:text-green-300">Perfect practice zone 💪</h3>
+            </div>
+            <div className="bg-muted/50 p-3 rounded-lg">
+              <p className="text-sm font-medium text-foreground">🔮 What should we do next time?</p>
+            </div>
           </div>
           
           <div className="space-y-3">
@@ -303,10 +309,13 @@ export const DrillCard = ({
     if (feeling === 'easy') {
       return (
         <div className="space-y-6">
-          <div className="text-center space-y-2">
-            <h3 className="text-xl font-semibold text-secondary">You smashed it! 🎉</h3>
-            <p className="text-sm text-muted-foreground">What should we do next time?</p>
-            <div className="w-12 h-0.5 bg-gradient-secondary mx-auto rounded-full"></div>
+          <div className="text-center space-y-3">
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 p-4 rounded-lg border border-purple-200/50">
+              <h3 className="text-xl font-semibold text-purple-700 dark:text-purple-300">You smashed it! 🎉</h3>
+            </div>
+            <div className="bg-muted/50 p-3 rounded-lg">
+              <p className="text-sm font-medium text-foreground">🔮 What should we do next time?</p>
+            </div>
           </div>
           
           <div className="space-y-3">
